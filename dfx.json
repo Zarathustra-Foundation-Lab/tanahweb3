@@ -1,0 +1,26 @@
+{
+  "canisters": {
+    "rwa-icp-backend": {
+      "main": "src/rwa-icp-backend/main.mo",
+      "type": "motoko"
+    },
+    "rwa-icp-frontend": {
+      "dependencies": [
+        "rwa-icp-backend"
+      ],
+      "source": [
+        "src/rwa-icp-frontend/dist"
+      ],
+      "type": "assets",
+      "workspace": "rwa-icp-frontend"
+    }
+  },
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": ""
+    }
+  },
+  "output_env_file": ".env",
+  "version": 1
+}
