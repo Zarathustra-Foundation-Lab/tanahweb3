@@ -1,11 +1,13 @@
 import User "types/User";
+
 import Principal "mo:base/Principal";
 import HashMap "mo:base/HashMap";
 import Text "mo:base/Text";
 import Nat "mo:base/Nat";
 import Nat32 "mo:base/Nat32";
 import Iter "mo:base/Iter";
-import Nat32 "mo:base/Nat32";
+import Array "mo:base/Array";
+
 import Item "types/Item";
 import UserService "services/UserService";
 import ItemService "services/ItemService";
@@ -16,14 +18,23 @@ actor class RwaICP() = this {
   ////////////////////////////////
   // ======= STATE VARS ======= //
   ////////////////////////////////
-
-  private stable var _tokenIds : Nat = 0;
+  private stable var owner : Principal = Principal.fromText("aaaaa-aa"); // default
+  private stable var _tokenIds : Nat = 0; // default nonce 0
 
   private var users : User.Users = HashMap.HashMap<Principal, User.User>(0, Principal.equal, Principal.hash);
   private var usernames : User.Usernames = HashMap.HashMap<Text, Principal>(0, Text.equal, Text.hash);
 
   private var items : Item.Items = HashMap.HashMap<Nat, Item.Item>(0, Nat.equal, func(n : Nat) : Nat32 { Nat32.fromNat(n) });
+
   private var collection : User.collection = HashMap.HashMap<Principal, [Nat]>(0, Principal.equal, Principal.hash);
+
+  ////////////////////////////////
+  // ======= Initial deploy function ======= //
+  ////////////////////////////////
+  public shared ({ caller }) func init() : async () {
+    // set deployer as owner
+    owner := caller;
+  };
 
   ////////////////////////////////
   // ======= User Function ======= //
@@ -80,8 +91,33 @@ actor class RwaICP() = this {
   // ======= Item Function ======= //
   ////////////////////////////////
 
-  public func getItems() : async [Item.Item] {
+  public query func getItems() : async [Item.Item] {
     return Iter.toArray(items.vals());
+  };
+
+  public shared query ({ caller }) func getUserCollection() : async [Item.Item] {
+    // auth check
+    if (Principal.isAnonymous(caller)) {
+      return [];
+    };
+
+    // ambil koleksi ID milik user
+    switch (collection.get(caller)) {
+      case (null) return [];
+
+      case (?ids) {
+        var result : [Item.Item] = [];
+
+        for (id in ids.vals()) {
+          switch (items.get(id)) {
+            case (?item) result := Array.append(result, [item]);
+            case (_) {}; // item tidak ditemukan, lewati
+          };
+        };
+
+        return result;
+      };
+    };
   };
 
   public shared ({ caller }) func createItem(payload : ItemRequest.CreateItemRequest) : async (Bool, Text) {
@@ -89,18 +125,77 @@ actor class RwaICP() = this {
     _tokenIds := _tokenIds + 1;
 
     switch (ItemService._createItem(_tokenIds, items, caller, payload)) {
-      case (#ok(_success, newItem)) { (true, "Success Create New Item") };
+      case (#ok(_success, message)) {
+
+        // get caller collection
+        let callerCollection = collection.get(caller);
+
+        // get updated array collection
+        let updatedCollection = switch callerCollection {
+          case null { [_tokenIds] };
+          case (?ids) { Array.append<Nat>(ids, [_tokenIds]) };
+        };
+
+        // update caller collection
+        collection.put(caller, updatedCollection);
+
+        return (true, message);
+      };
       case (#err(_err, message)) { (false, message) };
     };
 
   };
 
-  public func updateItemDetail() {};
+  public shared ({ caller }) func updateItemDetail(id : Nat, payload : ItemRequest.UpdateItemDetail) : async (Bool, Text) {
 
-  public func verifyItem() {};
+    switch (ItemService._updateDetail(items, id, caller, payload)) {
+      case (#ok(success, message)) {
+        return (success, message);
+      };
+      case (#err(err, message)) {
+        return (err, message);
+      };
+    };
+
+  };
+
+  public shared ({ caller }) func verifyItem(id : Nat) : async (Bool, Text) {
+    // check only owner can verify the item
+    if (caller != owner) {
+      return (false, "Forbiden Access");
+    };
+
+    switch (ItemService._verifyItem(items, id, caller, owner)) {
+      case (#ok(success, message)) {
+        return (success, message);
+      };
+      case (#err(err, message)) {
+        return (err, message);
+      };
+    };
+  };
+
+  public shared ({ caller }) func setItemDelisted(id : Nat) : async (Bool, Text) {
+
+    switch (ItemService._setItemDelisted(items, id, caller)) {
+      case (#ok(success, message)) {
+        return (success, message);
+      };
+      case (#err(err, message)) {
+        return (err, message);
+      };
+    };
+
+  };
 
   ////////////////////////////////
   // === Transaction Function === //
   ////////////////////////////////
+
+  public func requestBuyItem() {};
+
+  public func approveRequestBuy() {};
+
+  public func getAlltransaction() {};
 
 };

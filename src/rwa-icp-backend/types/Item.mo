@@ -29,8 +29,8 @@ module {
         #INITIAL;
         #FOR_SALE;
         #PENDING_SALE;
-        #SOLD;
-        #NOT_FOR_SALE;
+        #OWNED;
+        #DELISTED;
     };
 
 };
