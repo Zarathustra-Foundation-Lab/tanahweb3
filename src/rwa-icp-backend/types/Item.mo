@@ -1,19 +1,36 @@
 import Principal "mo:base/Principal";
 import HashMap "mo:base/HashMap";
 import Nat "mo:base/Nat";
-import Status "./Status";
-import Location "./Location";
+import Float "mo:base/Float";
 
 module {
+    public type Items = HashMap.HashMap<Nat, Item>;
+
     public type Item = {
-        item_id : Nat;
+        id : Nat;
         current_owner : Principal;
-        title_name : Text;
+        title : Text;
         description : Text;
-        location : Location.LocationItem;
-        status : Status.StatusItem;
-        image_urls : [Text];
+        location : Location;
+        status : Status;
+        legal_identifier : ?Text;
+        verifier : ?Principal;
+        document_hash : ?Text;
+        images_hash : ?Text;
     };
 
-    public type Items = HashMap.HashMap<Nat, Item>;
+    public type Location = {
+        lat : [Text];
+        long : [Text];
+        square_meters : Float.Float;
+    };
+
+    public type Status = {
+        #INITIAL;
+        #FOR_SALE;
+        #PENDING_SALE;
+        #SOLD;
+        #NOT_FOR_SALE;
+    };
+
 };

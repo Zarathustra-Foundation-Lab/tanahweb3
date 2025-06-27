@@ -1,16 +1,15 @@
+import User "types/User";
 import Principal "mo:base/Principal";
+import HashMap "mo:base/HashMap";
 import Text "mo:base/Text";
 import Nat "mo:base/Nat";
 import Nat32 "mo:base/Nat32";
-import HashMap "mo:base/HashMap";
-import Array "mo:base/Array";
-
-import User "types/User";
+import Iter "mo:base/Iter";
+import Nat32 "mo:base/Nat32";
 import Item "types/Item";
-import Location "types/Location";
-
 import UserService "services/UserService";
 import ItemService "services/ItemService";
+import ItemRequest "request/ItemRequest";
 
 actor class RwaICP() = this {
 
@@ -18,121 +17,90 @@ actor class RwaICP() = this {
   // ======= STATE VARS ======= //
   ////////////////////////////////
 
-  var nonce_item_id : Nat = 0;
-  var users = HashMap.HashMap<Principal, User.User>(10, Principal.equal, Principal.hash);
-  var usernames = HashMap.HashMap<Text, Principal>(10, Text.equal, Text.hash);
-  var items = HashMap.HashMap<Nat, Item.Item>(10, Nat.equal, func(n : Nat) : Nat32 { Nat32.fromNat(n) });
+  private stable var _tokenIds : Nat = 0;
+
+  private var users : User.Users = HashMap.HashMap<Principal, User.User>(0, Principal.equal, Principal.hash);
+  private var usernames : User.Usernames = HashMap.HashMap<Text, Principal>(0, Text.equal, Text.hash);
+
+  private var items : Item.Items = HashMap.HashMap<Nat, Item.Item>(0, Nat.equal, func(n : Nat) : Nat32 { Nat32.fromNat(n) });
+  private var collection : User.collection = HashMap.HashMap<Principal, [Nat]>(0, Principal.equal, Principal.hash);
 
   ////////////////////////////////
-  // ======= FUNCTIONS ======== //
+  // ======= User Function ======= //
   ////////////////////////////////
 
-  ////////////////////////////////
-  // ======= User Services =====//
-  ////////////////////////////////
-  public shared func signupUser(
-    username : Text,
-    detail : User.UserInformation,
-    contact : User.UserContact,
-  ) : async Bool {
-    let caller = Principal.fromActor(this);
-    // Panggil fungsi dari modul; HashMap diubah secara in-place
-    let (success) = UserService.signupUser(
-      users, // Diteruskan by reference
-      usernames, // Diteruskan by reference
-      caller,
-      username,
-      detail,
-      contact,
-    );
+  public shared ({ caller }) func Signup(_username : Text, _payload : User.User) : async (Bool, ?User.User) {
 
-    switch (success) {
-      case (#ok(success)) {
-        return true;
-
+    switch (UserService.Signup(users, usernames, caller, _username, _payload)) {
+      case (#ok(success, newUsers, _newUsernames)) {
+        return (success, newUsers.get(caller));
       };
-      case (#err(success)) {
-        return false;
-      };
-    };
-
-  };
-
-  public shared query func getUserByAddress(addr : Principal) : async ?User.User {
-    return users.get(addr);
-  };
-
-  public shared query func getUserByUsername(name : Text) : async ?User.User {
-    switch (usernames.get(name)) {
-      case null { return null };
-      case (?addr) { return users.get(addr) };
-    };
-  };
-
-  ////////////////////////////////
-  // ======= Item Services =====//
-  ////////////////////////////////
-
-  public shared func addNewItem(
-    title : Text,
-    description : Text,
-    location : Location.LocationItem,
-    images : [Text],
-    notes : Text,
-  ) : async Nat {
-    let caller = Principal.fromActor(this);
-
-    // Periksa pengguna terlebih dahulu
-    switch (await UserService.getUserByAddress(users, caller)) {
-      case null { return 0 }; // Pengguna tidak ditemukan
-      case (?user) {
-        // Panggil fungsi addNewItem dari ItemFunctions; HashMap diubah secara in-place
-        let (newItemId, newNonce) = await ItemService.addNewItem(
-          items, // Diteruskan by reference
-          nonce_item_id, // Teruskan nonce_item_id saat ini
-          caller,
-          title,
-          description,
-          location,
-          images,
-          notes,
-        );
-
-        nonce_item_id := newNonce; // Perbarui nonce_item_id
-
-        if (newItemId == 0) {
-          return 0; // Gagal membuat item
-        };
-
-        let updatedItemsIds = Array.append(user.items_id, [newItemId]);
-        // Panggil fungsi updateUsersItems dari UserFunctions; HashMap diubah secara in-place
-        let (success, newuser) = UserService.updateUsersItems(
-          users, // Diteruskan by reference
-          caller,
-          updatedItemsIds,
-        );
-
-        if (success) {
-          return newItemId;
-        } else {
-          return 0; // Gagal memperbarui daftar item pengguna
-        };
+      case (#err(_err)) {
+        return (false, null);
       };
     };
   };
 
-  public shared query func getItemsByUser() : async [Item.Item] {
-    let caller = Principal.fromActor(this);
+  public query func getUsers() : async [User.User] {
+    return Iter.toArray(users.vals());
+  };
 
-    switch (users.get(caller)) {
-      case null { return [] };
-      case (?user) {
-        return ItemService.getItemsByIds(items, user.items_id);
+  public query func getUserByPrincipal(_principal : Principal) : async ?User.User {
+    return users.get(_principal);
+  };
+
+  public query func getUserByUsername(_username : Text) : async ?User.User {
+    switch (usernames.get(_username)) {
+      case (null) { return null };
+      case (?user_principal) {
+        return users.get(user_principal);
       };
+    };
+
+  };
+
+  public shared ({ caller }) func updateUserDetail(payload : User.Detail) : async (Bool, Text) {
+
+    switch (UserService._updateDetail(users, caller, payload)) {
+      case (#err(status, err)) { return (status, err) };
+      case (#ok(status, message)) { return (status, message) };
+    };
+
+  };
+
+  public shared ({ caller }) func updateUserContact(payload : User.Contact) : async (Bool, Text) {
+
+    switch (UserService._updateContact(users, caller, payload)) {
+      case (#err(status, err)) { return (status, err) };
+      case (#ok(status, message)) { return (status, message) };
     };
   };
 
-  public shared query func getItem(id : Nat) : async ?Item.Item {
-    return ItemService.getItem(items, id);
+  ////////////////////////////////
+  // ======= Item Function ======= //
+  ////////////////////////////////
+
+  public func getItems() : async [Item.Item] {
+    return Iter.toArray(items.vals());
   };
+
+  public shared ({ caller }) func createItem(payload : ItemRequest.CreateItemRequest) : async (Bool, Text) {
+    // increment token id
+    _tokenIds := _tokenIds + 1;
+
+    switch (ItemService._createItem(_tokenIds, items, caller, payload)) {
+      case (#ok(_success, newItem)) { (true, "Success Create New Item") };
+      case (#err(_err, message)) { (false, message) };
+    };
+
+  };
+
+  public func updateItemDetail() {};
+
+  public func verifyItem() {};
+
+  ////////////////////////////////
+  // === Transaction Function === //
+  ////////////////////////////////
+
 };
