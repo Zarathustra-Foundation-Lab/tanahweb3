@@ -5,5 +5,4 @@ module {
         message : Text;
         status : Nat8;
     };
-
 };

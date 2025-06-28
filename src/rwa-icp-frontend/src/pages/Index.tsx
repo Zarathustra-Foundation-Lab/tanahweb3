@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -12,49 +12,53 @@ import LandCard from "@/components/LandCard";
 import { Search, Map, Users, Shield } from "lucide-react";
 import type { StatusItem } from "@/types";
 
+import { rwa_icp_backend } from "../../../declarations/rwa-icp-backend";
+
+type Land = {
+  id: string;
+  title: string;
+  // price?: string;
+  // area?: string;
+  status: StatusItem;
+  location: string;
+  owner: string;
+};
+
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [lands, setLands] = useState<Land[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Mock data for lands
-  const lands = [
-    {
-      id: "1",
-      title: "Prime Digital Estate",
-      price: "2.5 ETH",
-      area: "1,000 m²",
-      status: "LISTED" as StatusItem,
-      location: "Cyber District, Metaverse",
-      owner: "0x742d...9e4f",
-    },
-    {
-      id: "2",
-      title: "Coastal Virtual Land",
-      price: "1.8 ETH",
-      area: "750 m²",
-      status: "OWNED" as StatusItem,
-      location: "Virtual Shores, Web3",
-      owner: "0x9a3c...8b2f",
-    },
-    {
-      id: "3",
-      title: "Mountain View Plot",
-      price: "3.2 ETH",
-      area: "1,500 m²",
-      status: "LISTED" as StatusItem,
-      location: "Pixel Heights, Digital Realm",
-      owner: "0x567d...2a8c",
-    },
-    {
-      id: "4",
-      title: "Urban Development Zone",
-      price: "4.1 ETH",
-      area: "2,000 m²",
-      status: "CONFLIG" as StatusItem,
-      location: "Neo Tokyo, Blockchain City",
-      owner: "0x834b...5f9e",
-    },
-  ];
+  useEffect(() => {
+    const fetchLands = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        console.log('berak')
+        const items = await rwa_icp_backend.getItems();
+        console.log('berak 2')
+
+        const mappedLands: Land[] = items.map((item: any) => ({
+          id: item.id?.toString() ?? "",
+          title: item.title ?? "Untitled",
+          status: item.status ?? "LISTED",
+          location: item.location ?? "-",
+          owner: item.current_owner ?? "-",
+        }));
+
+        setLands(mappedLands);
+      } catch (err: any) {
+        console.log(err)
+        setError("Failed to fetch lands from canister.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLands();
+  }, []);
 
   const filteredLands = lands.filter((land) => {
     const matchesSearch =
@@ -73,6 +77,7 @@ const Index = () => {
         <div className="container mx-auto relative z-10">
           <div className="text-center max-w-4xl mx-auto">
             <h1 className="text-5xl md:text-7xl font-bold mb-6 web3-gradient">
+              {error}
               Own Digital Land
             </h1>
             <p className="text-xl md:text-2xl text-muted-foreground mb-8 leading-relaxed">
@@ -151,21 +156,31 @@ const Index = () => {
             </Select>
           </div>
 
-          {/* Land Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredLands.map((land) => (
-              <LandCard key={land.id} {...land} />
-            ))}
-          </div>
-
-          {filteredLands.length === 0 && (
+          {loading ? (
             <div className="text-center py-12">
-              <Map className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">No lands found</h3>
-              <p className="text-muted-foreground">
-                Try adjusting your search terms or filters.
-              </p>
+              <span className="text-lg text-muted-foreground animate-pulse">Loading lands...</span>
             </div>
+          ) : error ? (
+            <div className="text-center py-12">
+              <span className="text-lg text-destructive">{error}</span>
+            </div>
+          ) : (
+            <>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {filteredLands.map((land) => (
+                  <LandCard key={land.id} {...land} />
+                ))}
+              </div>
+              {filteredLands.length === 0 && (
+                <div className="text-center py-12">
+                  <Map className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold mb-2">No lands found</h3>
+                  <p className="text-muted-foreground">
+                    Try adjusting your search terms or filters.
+                  </p>
+                </div>
+              )}
+            </>
           )}
         </div>
       </section>

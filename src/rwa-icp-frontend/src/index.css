@@ -3,47 +3,47 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Web3 Dark Theme Color System */
+/* Web3 Light Theme Color System */
 
 @layer base {
   :root {
-    --background: 210 11% 7%;
-    --foreground: 210 20% 98%;
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
 
-    --card: 210 11% 10%;
-    --card-foreground: 210 20% 98%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
 
-    --popover: 210 11% 10%;
-    --popover-foreground: 210 20% 98%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
 
     --primary: 191 100% 50%;
-    --primary-foreground: 210 11% 7%;
+    --primary-foreground: 210 40% 98%;
 
-    --secondary: 210 11% 15%;
-    --secondary-foreground: 210 20% 98%;
+    --secondary: 210 40% 98%;
+    --secondary-foreground: 222.2 84% 4.9%;
 
-    --muted: 210 11% 15%;
-    --muted-foreground: 210 10% 60%;
+    --muted: 210 40% 98%;
+    --muted-foreground: 215.4 16.3% 46.9%;
 
     --accent: 262 83% 58%;
-    --accent-foreground: 210 20% 98%;
+    --accent-foreground: 210 40% 98%;
 
     --destructive: 0 84% 60%;
-    --destructive-foreground: 210 20% 98%;
+    --destructive-foreground: 210 40% 98%;
 
-    --border: 210 11% 20%;
-    --input: 210 11% 15%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
     --ring: 191 100% 50%;
 
     --radius: 0.75rem;
 
-    --sidebar-background: 210 11% 7%;
-    --sidebar-foreground: 210 20% 98%;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 222.2 84% 4.9%;
     --sidebar-primary: 191 100% 50%;
-    --sidebar-primary-foreground: 210 11% 7%;
-    --sidebar-accent: 210 11% 15%;
-    --sidebar-accent-foreground: 210 20% 98%;
-    --sidebar-border: 210 11% 20%;
+    --sidebar-primary-foreground: 210 40% 98%;
+    --sidebar-accent: 210 40% 98%;
+    --sidebar-accent-foreground: 222.2 84% 4.9%;
+    --sidebar-border: 214.3 31.8% 91.4%;
     --sidebar-ring: 191 100% 50%;
   }
 }
@@ -56,9 +56,9 @@
   body {
     @apply bg-background text-foreground font-sans;
     background-image: 
-      radial-gradient(at 20% 80%, hsla(191, 100%, 50%, 0.1) 0px, transparent 50%),
-      radial-gradient(at 80% 20%, hsla(262, 83%, 58%, 0.1) 0px, transparent 50%),
-      radial-gradient(at 40% 40%, hsla(158, 64%, 52%, 0.1) 0px, transparent 50%);
+      radial-gradient(at 20% 80%, hsla(191, 100%, 50%, 0.05) 0px, transparent 50%),
+      radial-gradient(at 80% 20%, hsla(262, 83%, 58%, 0.05) 0px, transparent 50%),
+      radial-gradient(at 40% 40%, hsla(158, 64%, 52%, 0.05) 0px, transparent 50%);
   }
 
   h1, h2, h3, h4, h5, h6 {

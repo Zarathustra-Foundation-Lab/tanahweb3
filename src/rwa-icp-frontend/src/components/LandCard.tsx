@@ -9,8 +9,8 @@ import type { StatusItem } from "@/types";
 interface LandCardProps {
   id: string;
   title: string;
-  price: string;
-  area: string;
+  price?: string;
+  area?: string;
   status: StatusItem;
   location: string;
   owner: string;
