@@ -97,6 +97,38 @@ module {
         return #ok(true, "Success Verify Item");
     };
 
+    public func _setStatusListing(items : Item.Items, id : Nat, caller : Principal) : Result.Result<(Bool, Text), (Bool, Text)> {
+
+        switch (items.get(id)) {
+            case (null) { return #err(false, "item not found") };
+            case (?item) {
+                // check if user can edit this
+                if (item.current_owner != caller) {
+                    return #err(false, "User not allowance");
+                };
+
+                let data : Item.Item = {
+                    id = item.id;
+                    current_owner = item.current_owner;
+                    title = item.title;
+                    description = item.description;
+                    location = item.location;
+                    status = #FOR_SALE;
+                    legal_identifier = item.legal_identifier;
+                    verifier = item.verifier;
+                    document_hash = item.document_hash;
+                    images_hash = item.images_hash;
+                };
+
+                // update item
+                items.put(item.id, data)
+
+            };
+        };
+
+        #ok(true, "Success update status listing item");
+    };
+
     public func _setItemDelisted(items : Item.Items, id : Nat, caller : Principal) : Result.Result<(Bool, Text), (Bool, Text)> {
 
         switch (items.get(id)) {
@@ -128,4 +160,5 @@ module {
 
         #ok(true, "Success delist item");
     };
+
 };

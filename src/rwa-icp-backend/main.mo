@@ -7,11 +7,15 @@ import Nat "mo:base/Nat";
 import Nat32 "mo:base/Nat32";
 import Iter "mo:base/Iter";
 import Array "mo:base/Array";
+import Time "mo:base/Time";
 
 import Item "types/Item";
 import UserService "services/UserService";
 import ItemService "services/ItemService";
+import Transaction "types/Transaction";
+
 import ItemRequest "request/ItemRequest";
+import TransactionService "services/TransactionService";
 
 actor class RwaICP() = this {
 
@@ -20,13 +24,21 @@ actor class RwaICP() = this {
   ////////////////////////////////
   private stable var owner : Principal = Principal.fromText("aaaaa-aa"); // default
   private stable var _tokenIds : Nat = 0; // default nonce 0
+  private var transaction_counter : Nat = 0;
 
+  // user state
   private var users : User.Users = HashMap.HashMap<Principal, User.User>(0, Principal.equal, Principal.hash);
   private var usernames : User.Usernames = HashMap.HashMap<Text, Principal>(0, Text.equal, Text.hash);
 
+  // item state
   private var items : Item.Items = HashMap.HashMap<Nat, Item.Item>(0, Nat.equal, func(n : Nat) : Nat32 { Nat32.fromNat(n) });
 
   private var collection : User.collection = HashMap.HashMap<Principal, [Nat]>(0, Principal.equal, Principal.hash);
+
+  // transaction state
+  private var requests : Transaction.BuyRequest = HashMap.HashMap<Nat, [Principal]>(0, Nat.equal, func(n : Nat) : Nat32 { Nat32.fromNat(n) });
+
+  private stable var transactions : [Transaction.Transaction] = [];
 
   ////////////////////////////////
   // ======= Initial deploy function ======= //
@@ -175,7 +187,18 @@ actor class RwaICP() = this {
     };
   };
 
-  public shared ({ caller }) func setItemDelisted(id : Nat) : async (Bool, Text) {
+  public shared ({ caller }) func setListingItem(id : Nat) : async (Bool, Text) {
+    switch (ItemService._setStatusListing(items, id, caller)) {
+      case (#ok(success, message)) {
+        return (success, message);
+      };
+      case (#err(err, message)) {
+        return (err, message);
+      };
+    };
+  };
+
+  public shared ({ caller }) func setDelistedItem(id : Nat) : async (Bool, Text) {
 
     switch (ItemService._setItemDelisted(items, id, caller)) {
       case (#ok(success, message)) {
@@ -192,10 +215,55 @@ actor class RwaICP() = this {
   // === Transaction Function === //
   ////////////////////////////////
 
-  public func requestBuyItem() {};
+  public shared ({ caller }) func requestBuyItem(itemId : Nat) : async (Bool, Text) {
+    if (Principal.isAnonymous(caller)) return (false, "need authenticate");
 
-  public func approveRequestBuy() {};
+    switch (TransactionService._requestBuyItem(items, requests, itemId, caller)) {
+      case (#ok(success, message)) { return (success, message) };
+      case (#err(err, message)) { return (err, message) };
+    };
+  };
 
-  public func getAlltransaction() {};
+  public shared ({ caller }) func approveRequestBuy(itemId : Nat, buyer : Principal) : async (Bool, Text) {
+    switch (TransactionService._approveRequest(items, requests, itemId, buyer, caller)) {
+      case (#ok(success, message)) { return (success, message) };
+      case (#err(err, message)) { return (err, message) };
+    };
+
+  };
+
+  // here
+  public shared query ({ caller }) func getRequestBuy() : async [(Nat, Item.Item)] {
+    var result : [(Nat, Item.Item)] = [];
+
+    for ((itemId, principals) in requests.entries()) {
+      if (Array.find<Principal>(principals, func(p) = p == caller) != null) {
+        switch (items.get(itemId)) {
+          case (?item) result := Array.append(result, [(itemId, item)]);
+          case _ {};
+        };
+      };
+    };
+
+    return result;
+  };
+
+  public shared query ({ caller }) func getMyTransaction() : async [Transaction.Transaction] {
+    var result : [Transaction.Transaction] = [];
+
+    for (key in transactions.keys()) {
+      switch (transactions.get(key)) {
+        case (tx) if (tx.buyer_principal == caller or tx.seller_principal == caller) {
+          result := Array.append(result, [tx]);
+        };
+      };
+    };
+
+    return result;
+  };
+
+  public query func getAlltransaction() : async [Transaction.Transaction] {
+    return Iter.toArray(transactions.vals());
+  };
 
 };
