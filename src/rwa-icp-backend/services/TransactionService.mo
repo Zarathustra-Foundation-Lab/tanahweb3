@@ -63,6 +63,7 @@ module {
                             id = item.id;
                             current_owner = buyer;
                             title = item.title;
+                            price = item.price;
                             description = item.description;
                             location = item.location;
                             status = #OWNED;

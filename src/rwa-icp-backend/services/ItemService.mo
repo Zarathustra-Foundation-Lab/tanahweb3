@@ -16,6 +16,7 @@ module {
             id = tokenIds;
             current_owner = caller;
             title = _payload.title;
+            price = _payload.price;
             description = _payload.description;
             location = _payload.location;
             status = status;
@@ -46,6 +47,7 @@ module {
                     id = item.id;
                     current_owner = item.current_owner;
                     title = _payload.title;
+                    price = _payload.price;
                     description = _payload.description;
                     location = _payload.location;
                     status = item.status;
@@ -79,6 +81,7 @@ module {
                     id = item.id;
                     current_owner = item.current_owner;
                     title = item.title;
+                    price = item.price;
                     description = item.description;
                     location = item.location;
                     status = item.status;
@@ -111,6 +114,7 @@ module {
                     id = item.id;
                     current_owner = item.current_owner;
                     title = item.title;
+                    price = item.price;
                     description = item.description;
                     location = item.location;
                     status = #FOR_SALE;
@@ -143,6 +147,7 @@ module {
                     id = item.id;
                     current_owner = item.current_owner;
                     title = item.title;
+                    price = item.price;
                     description = item.description;
                     location = item.location;
                     status = #DELISTED;
