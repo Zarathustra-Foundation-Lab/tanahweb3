@@ -1,0 +1,108 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Web3 Dark Theme Color System */
+
+@layer base {
+  :root {
+    --background: 210 11% 7%;
+    --foreground: 210 20% 98%;
+
+    --card: 210 11% 10%;
+    --card-foreground: 210 20% 98%;
+
+    --popover: 210 11% 10%;
+    --popover-foreground: 210 20% 98%;
+
+    --primary: 191 100% 50%;
+    --primary-foreground: 210 11% 7%;
+
+    --secondary: 210 11% 15%;
+    --secondary-foreground: 210 20% 98%;
+
+    --muted: 210 11% 15%;
+    --muted-foreground: 210 10% 60%;
+
+    --accent: 262 83% 58%;
+    --accent-foreground: 210 20% 98%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 20% 98%;
+
+    --border: 210 11% 20%;
+    --input: 210 11% 15%;
+    --ring: 191 100% 50%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 210 11% 7%;
+    --sidebar-foreground: 210 20% 98%;
+    --sidebar-primary: 191 100% 50%;
+    --sidebar-primary-foreground: 210 11% 7%;
+    --sidebar-accent: 210 11% 15%;
+    --sidebar-accent-foreground: 210 20% 98%;
+    --sidebar-border: 210 11% 20%;
+    --sidebar-ring: 191 100% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+    background-image: 
+      radial-gradient(at 20% 80%, hsla(191, 100%, 50%, 0.1) 0px, transparent 50%),
+      radial-gradient(at 80% 20%, hsla(262, 83%, 58%, 0.1) 0px, transparent 50%),
+      radial-gradient(at 40% 40%, hsla(158, 64%, 52%, 0.1) 0px, transparent 50%);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold;
+  }
+
+  .web3-gradient {
+    background: linear-gradient(135deg, #00D4FF 0%, #8B5CF6 50%, #10B981 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .web3-border {
+    border-image: linear-gradient(135deg, #00D4FF, #8B5CF6, #10B981) 1;
+  }
+
+  .leaflet-container {
+    @apply bg-background border border-border rounded-lg;
+  }
+
+  .leaflet-control-attribution {
+    @apply bg-card text-muted-foreground text-xs;
+  }
+
+  .leaflet-popup-content-wrapper {
+    @apply bg-card text-foreground border border-border rounded-lg shadow-xl;
+  }
+
+  .leaflet-popup-tip {
+    @apply bg-card border-border;
+  }
+}
+
+@layer components {
+  .btn-web3 {
+    @apply bg-gradient-to-r from-web3-cyan to-web3-purple hover:from-web3-cyan-dark hover:to-web3-purple-dark text-white font-medium px-6 py-3 rounded-lg transition-all duration-300 hover:shadow-lg hover:shadow-web3-cyan/25;
+  }
+
+  .card-web3 {
+    @apply bg-card border border-border rounded-lg p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-web3-cyan/50;
+  }
+
+  .input-web3 {
+    @apply bg-input border border-border rounded-lg px-4 py-3 text-foreground placeholder:text-muted-foreground focus:border-web3-cyan focus:ring-1 focus:ring-web3-cyan/50 transition-all duration-200;
+  }
+}

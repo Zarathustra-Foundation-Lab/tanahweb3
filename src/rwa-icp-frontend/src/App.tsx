@@ -1,31 +1,39 @@
-import { useState } from 'react';
-import { rwa_icp_backend } from '../../declarations/rwa-icp-backend';
 
-function App() {
-  const [greeting, setGreeting] = useState('');
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Index from "./pages/Index";
+import LandDetail from "./pages/LandDetail";
+import BuyLand from "./pages/BuyLand";
+import SellLand from "./pages/SellLand";
+import UserProfile from "./pages/UserProfile";
+import NotFound from "./pages/NotFound";
+import Navbar from "./components/Navbar";
 
-  function handleSubmit(event: any) {
-    event.preventDefault();
-    const name = event.target.elements.name.value;
-    rwa_icp_backend.greet(name).then((greeting) => {
-      setGreeting(greeting);
-    });
-    return false;
-  }
+const queryClient = new QueryClient();
 
-  return (
-    <main>
-      <img src="/logo2.svg" alt="DFINITY logo" />
-      <br />
-      <br />
-      <form action="#" onSubmit={handleSubmit}>
-        <label htmlFor="name">Enter your name: &nbsp;</label>
-        <input id="name" alt="Name" type="text" />
-        <button type="submit">Click Me!</button>
-      </form>
-      <section id="greeting">{greeting}</section>
-    </main>
-  );
-}
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <div className="min-h-screen bg-background">
+          <Navbar />
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/land/:id" element={<LandDetail />} />
+            <Route path="/buy/:id" element={<BuyLand />} />
+            <Route path="/sell" element={<SellLand />} />
+            <Route path="/profile/:userId" element={<UserProfile />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </div>
+      </BrowserRouter>
+    </TooltipProvider>
+  </QueryClientProvider>
+);
 
 export default App;
