@@ -1,8 +1,13 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import LandCard from "@/components/LandCard";
 import { Search, Map, Users, Shield } from "lucide-react";
 import type { StatusItem } from "@/types";
@@ -20,16 +25,16 @@ const Index = () => {
       area: "1,000 m²",
       status: "LISTED" as StatusItem,
       location: "Cyber District, Metaverse",
-      owner: "0x742d...9e4f"
+      owner: "0x742d...9e4f",
     },
     {
-      id: "2", 
+      id: "2",
       title: "Coastal Virtual Land",
       price: "1.8 ETH",
       area: "750 m²",
       status: "OWNED" as StatusItem,
       location: "Virtual Shores, Web3",
-      owner: "0x9a3c...8b2f"
+      owner: "0x9a3c...8b2f",
     },
     {
       id: "3",
@@ -38,7 +43,7 @@ const Index = () => {
       area: "1,500 m²",
       status: "LISTED" as StatusItem,
       location: "Pixel Heights, Digital Realm",
-      owner: "0x567d...2a8c"
+      owner: "0x567d...2a8c",
     },
     {
       id: "4",
@@ -47,14 +52,16 @@ const Index = () => {
       area: "2,000 m²",
       status: "CONFLIG" as StatusItem,
       location: "Neo Tokyo, Blockchain City",
-      owner: "0x834b...5f9e"
-    }
+      owner: "0x834b...5f9e",
+    },
   ];
 
-  const filteredLands = lands.filter(land => {
-    const matchesSearch = land.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         land.location.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === "all" || land.status === statusFilter;
+  const filteredLands = lands.filter((land) => {
+    const matchesSearch =
+      land.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      land.location.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus =
+      statusFilter === "all" || land.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
@@ -69,8 +76,8 @@ const Index = () => {
               Own Digital Land
             </h1>
             <p className="text-xl md:text-2xl text-muted-foreground mb-8 leading-relaxed">
-              Buy, sell, and trade virtual real estate on the blockchain. 
-              Secure your piece of the metaverse today.
+              Buy, sell, and trade virtual real estate on the blockchain. Secure
+              your piece of the metaverse today.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" className="btn-web3 text-lg px-8 py-4">
@@ -87,20 +94,24 @@ const Index = () => {
       {/* Features Section */}
       <section className="py-16 px-4 sm:px-6 lg:px-8">
         <div className="container mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-12">Why Choose LandChain?</h2>
+          <h2 className="text-3xl font-bold text-center mb-12">
+            Why Choose LandChain?
+          </h2>
           <div className="grid md:grid-cols-3 gap-8">
             <div className="card-web3 text-center">
               <Map className="h-12 w-12 text-web3-cyan mx-auto mb-4" />
               <h3 className="text-xl font-semibold mb-3">Interactive Maps</h3>
               <p className="text-muted-foreground">
-                Explore lands with detailed interactive maps showing exact boundaries and locations.
+                Explore lands with detailed interactive maps showing exact
+                boundaries and locations.
               </p>
             </div>
             <div className="card-web3 text-center">
               <Shield className="h-12 w-12 text-web3-purple mx-auto mb-4" />
               <h3 className="text-xl font-semibold mb-3">Blockchain Secured</h3>
               <p className="text-muted-foreground">
-                All transactions and ownership records are secured on the blockchain.
+                All transactions and ownership records are secured on the
+                blockchain.
               </p>
             </div>
             <div className="card-web3 text-center">

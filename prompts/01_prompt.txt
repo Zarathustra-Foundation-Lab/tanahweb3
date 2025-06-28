@@ -1,0 +1,4 @@
+Integrasikan frontend yang sudah ada pada @/src/rwa-icp-frontend/ sesuai dengan fungsi yang ada pada @/src/rwa-icp-backend/main.mo 
+
+
+dimulai dari page index.tsx dulu, jika sudah bagus baru lanjutkan ke yang lain
