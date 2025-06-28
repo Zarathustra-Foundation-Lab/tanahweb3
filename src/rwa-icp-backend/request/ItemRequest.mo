@@ -4,6 +4,7 @@ import Item "../types/Item";
 module {
     public type CreateItemRequest = {
         title : Text;
+        price : Nat;
         description : Text;
         location : Item.Location;
         legal_identifier : ?Text;
@@ -14,6 +15,7 @@ module {
 
     public type UpdateItemDetail = {
         title : Text;
+        price : Nat;
         description : Text;
         location : Item.Location;
         legal_identifier : ?Text;

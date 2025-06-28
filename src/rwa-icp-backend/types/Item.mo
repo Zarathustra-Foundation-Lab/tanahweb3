@@ -10,6 +10,7 @@ module {
         id : Nat;
         current_owner : Principal;
         title : Text;
+        price : Nat;
         description : Text;
         location : Location;
         status : Status;

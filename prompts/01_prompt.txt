@@ -2,3 +2,7 @@ Integrasikan frontend yang sudah ada pada @/src/rwa-icp-frontend/ sesuai dengan 
 
 
 dimulai dari page index.tsx dulu, jika sudah bagus baru lanjutkan ke yang lain
+
+
+https://github.com/dfinity/ic/releases/download/ledger-suite-icp-2025-05-15/ledger-canister_notify-method.wasm.gz
+https://github.com/dfinity/ic/releases/download/ledger-suite-icp-2025-05-15/ledger.did

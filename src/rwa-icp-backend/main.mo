@@ -7,7 +7,7 @@ import Nat "mo:base/Nat";
 import Nat32 "mo:base/Nat32";
 import Iter "mo:base/Iter";
 import Array "mo:base/Array";
-import Time "mo:base/Time";
+// import Time "mo:base/Time";
 
 import Item "types/Item";
 import UserService "services/UserService";
@@ -24,7 +24,7 @@ actor class RwaICP() = this {
   ////////////////////////////////
   private stable var owner : Principal = Principal.fromText("aaaaa-aa"); // default
   private stable var _tokenIds : Nat = 0; // default nonce 0
-  private var transaction_counter : Nat = 0;
+  // private var transaction_counter : Nat = 0;
 
   // user state
   private var users : User.Users = HashMap.HashMap<Principal, User.User>(0, Principal.equal, Principal.hash);
