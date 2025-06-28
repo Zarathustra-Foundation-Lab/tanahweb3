@@ -10,18 +10,23 @@ import {
 } from "@/components/ui/select";
 import LandCard from "@/components/LandCard";
 import { Search, Map, Users, Shield } from "lucide-react";
-import type { StatusItem } from "@/types";
-
-import { rwa_icp_backend } from "../../../declarations/rwa-icp-backend";
+import { rwa_icp_backend } from "declarations/rwa-icp-backend";
 
 type Land = {
   id: string;
+  current_owner: string;
   title: string;
-  // price?: string;
-  // area?: string;
-  status: StatusItem;
-  location: string;
-  owner: string;
+  description: string;
+  location: {
+    lat: string[];
+    long: string[];
+    square_meters: number;
+  };
+  status: "INITIAL" | "FOR_SALE" | "PENDING_SALE" | "OWNED" | "DELISTED";
+  legal_identifier?: string | string[];
+  verifier?: string | string[];
+  document_hash?: string | string[];
+  images_hash?: string | string[];
 };
 
 const Index = () => {
@@ -36,21 +41,38 @@ const Index = () => {
       setLoading(true);
       setError(null);
       try {
-        console.log('berak')
         const items = await rwa_icp_backend.getItems();
-        console.log('berak 2')
+        console.log(items);
 
         const mappedLands: Land[] = items.map((item: any) => ({
           id: item.id?.toString() ?? "",
+          current_owner: item.current_owner?.toString() ?? "-",
           title: item.title ?? "Untitled",
-          status: item.status ?? "LISTED",
-          location: item.location ?? "-",
-          owner: item.current_owner ?? "-",
+          description: item.description ?? "-",
+          location: {
+            lat: item.location?.lat ?? [],
+            long: item.location?.long ?? [],
+            square_meters:
+              typeof item.location?.square_meters === "number"
+                ? item.location.square_meters
+                : 0,
+          },
+          status: (() => {
+            if (typeof item.status === "object" && item.status !== null) {
+              const keys = Object.keys(item.status);
+              return keys[0].replace(/^#/, "").toUpperCase();
+            }
+            return "INITIAL";
+          })() as Land["status"],
+          legal_identifier: item.legal_identifier ?? null,
+          verifier: item.verifier?.toString?.() ?? null,
+          document_hash: item.document_hash ?? null,
+          images_hash: item.images_hash ?? null,
         }));
 
         setLands(mappedLands);
       } catch (err: any) {
-        console.log(err)
+        console.log(err);
         setError("Failed to fetch lands from canister.");
       } finally {
         setLoading(false);
@@ -61,9 +83,12 @@ const Index = () => {
   }, []);
 
   const filteredLands = lands.filter((land) => {
+    const search = searchQuery.toLowerCase();
     const matchesSearch =
-      land.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      land.location.toLowerCase().includes(searchQuery.toLowerCase());
+      land.title.toLowerCase().includes(search) ||
+      land.description.toLowerCase().includes(search) ||
+      land.location.lat.some((lat) => lat.toLowerCase().includes(search)) ||
+      land.location.long.some((lng) => lng.toLowerCase().includes(search));
     const matchesStatus =
       statusFilter === "all" || land.status === statusFilter;
     return matchesSearch && matchesStatus;
@@ -149,9 +174,11 @@ const Index = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="LISTED">Listed</SelectItem>
+                <SelectItem value="FOR_SALE">For Sale</SelectItem>
                 <SelectItem value="OWNED">Owned</SelectItem>
-                <SelectItem value="CONFLIG">Conflict</SelectItem>
+                <SelectItem value="PENDING_SALE">Pending Sale</SelectItem>
+                <SelectItem value="DELISTED">Delisted</SelectItem>
+                <SelectItem value="INITIAL">Initial</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -168,7 +195,7 @@ const Index = () => {
             <>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {filteredLands.map((land) => (
-                  <LandCard key={land.id} {...land} />
+                  <LandCard key={land.id} {...land} owner={land.current_owner} />
                 ))}
               </div>
               {filteredLands.length === 0 && (

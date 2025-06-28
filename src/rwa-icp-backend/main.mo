@@ -106,6 +106,13 @@ actor class RwaICP() = this {
   public query func getItems() : async [Item.Item] {
     return Iter.toArray(items.vals());
   };
+  
+  public query func getItem(id : Nat) : async ?Item.Item {
+    switch (items.get(id)) {
+      case (null) return null;
+      case (?item) return ?item;
+    };
+  };
 
   public shared query ({ caller }) func getUserCollection() : async [Item.Item] {
     // auth check
@@ -159,7 +166,6 @@ actor class RwaICP() = this {
   };
 
   public shared ({ caller }) func updateItemDetail(id : Nat, payload : ItemRequest.UpdateItemDetail) : async (Bool, Text) {
-
     switch (ItemService._updateDetail(items, id, caller, payload)) {
       case (#ok(success, message)) {
         return (success, message);

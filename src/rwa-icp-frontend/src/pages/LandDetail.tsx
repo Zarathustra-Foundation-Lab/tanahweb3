@@ -1,77 +1,170 @@
-
 import { useParams, Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import MapView from "@/components/MapView";
 import { ArrowLeft, MapPin, User, Phone, MessageCircle } from "lucide-react";
-import type { Item, StatusItem, User as UserType } from "@/types";
+import { rwa_icp_backend } from "declarations/rwa-icp-backend";
+
+export interface LocationItem {
+  lat: string[];
+  long: string[];
+  square_meters: number;
+}
+
+export interface Item {
+  id: number;
+  current_owner: string;
+  title: string;
+  description: string;
+  location: LocationItem;
+  status: "INITIAL" | "FOR_SALE" | "PENDING_SALE" | "OWNED" | "DELISTED";
+  legal_identifier?: string | null;
+  verifier?: string | null;
+  document_hash?: string | null;
+  images_hash?: string | null;
+}
+
+const statusToString = (status: any) => {
+  if (status["INITIAL"]) return "INITIAL";
+  if (status["FOR_SALE"]) return "FOR_SALE";
+  if (status["PENDING_SALE"]) return "PENDING_SALE";
+  if (status["OWNED"]) return "OWNED";
+  if (status["DELISTED"]) return "DELISTED";
+  return "INITIAL";
+};
+
+const getStatusColor = (status: Item['status']) => {
+  switch (status) {
+    case "FOR_SALE":
+      return "bg-web3-green text-white";
+    case "OWNED":
+      return "bg-web3-purple text-white";
+    case "PENDING_SALE":
+      return "bg-yellow-500 text-white";
+    case "DELISTED":
+      return "bg-destructive text-destructive-foreground";
+    case "INITIAL":
+    default:
+      return "bg-muted text-muted-foreground";
+  }
+};
 
 const LandDetail = () => {
   const { id } = useParams();
+  const [land, setLand] = useState<Item | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState<string | null>(null);
 
-  // Mock data matching new types
-  const land: Item = {
-    item_id: 1,
-    current_owner: "owner1",
-    title_name: "Prime Digital Estate",
-    description: "Premium digital real estate located in the heart of the Cyber District. This expansive plot offers excellent development potential with proximity to major virtual attractions and transportation hubs.",
-    location: {
-      lat: ["40.7128"],
-      long: ["-74.006"],
-      polygon: "[[-74.006, 40.7128], [-74.005, 40.7128], [-74.005, 40.7138], [-74.006, 40.7138], [-74.006, 40.7128]]",
-      total_area: "1,000 m²"
-    },
-    status: "LISTED",
-    image_urls: []
-  };
-
-  const owner: UserType = {
-    principal_id: "owner1",
-    username: "alexchen_web3",
+  const owner = {
+    principal_id: land?.current_owner ?? "",
+    username: "unknown_owner",
     detail: {
-      first_name: "Alex",
-      last_name: "Chen",
+      first_name: "Unknown",
+      last_name: "",
       bio: "",
-      city: "New York",
-      country: "United States"
+      city: "-",
+      country: "-"
     },
     contact: {
-      callnumber: "+1 (555) 123-4567",
-      instagram: "@alexchen_web3",
-      whatapps: "+1 (555) 123-4567"
+      callnumber: "-",
+      instagram: "-",
+      whatapps: "-"
     },
-    items_id: [1]
+    items_id: []
   };
 
-  const coordinates: [number, number] = [parseFloat(land.location.long[0]), parseFloat(land.location.lat[0])];
-  
-  // Parse polygon from string (simple format)
-  const polygon: [number, number][] = [
-    [parseFloat(land.location.long[0]) - 0.001, parseFloat(land.location.lat[0]) - 0.001],
-    [parseFloat(land.location.long[0]) + 0.001, parseFloat(land.location.lat[0]) - 0.001],
-    [parseFloat(land.location.long[0]) + 0.001, parseFloat(land.location.lat[0]) + 0.001],
-    [parseFloat(land.location.long[0]) - 0.001, parseFloat(land.location.lat[0]) + 0.001],
-    [parseFloat(land.location.long[0]) - 0.001, parseFloat(land.location.lat[0]) - 0.001]
-  ];
+  useEffect(() => {
+    const fetchLand = async () => {
+      setLoading(true);
+      setErr(null);
+      try {
+        const natId = Number(id);
+        const land = await rwa_icp_backend.getItem(natId);
+        
+        console.log(land)
 
-  const getStatusColor = (status: StatusItem) => {
-    switch (status) {
-      case 'LISTED':
-        return 'bg-web3-green text-white';
-      case 'OWNED':
-        return 'bg-web3-purple text-white';
-      case 'CONFLIG':
-        return 'bg-destructive text-destructive-foreground';
-      default:
-        return 'bg-muted text-muted-foreground';
-    }
-  };
+        if (!land) {
+          setErr("Land not found");
+          setLand(null);
+        } else {
+          const result = land[0];
+          const getNullableString = (val: any) => {
+            if (Array.isArray(val) && val.length === 0) return null;
+            if (Array.isArray(val) && val.length > 0) return val[0];
+            if (typeof val === "string") return val;
+            if (val && val.toText) return val.toText();
+            return null;
+          };
+          setLand({
+            id: result.id,
+            current_owner: result.current_owner.toText ? result.current_owner.toText() : result.current_owner,
+            title: result.title,
+            description: result.description,
+            location: {
+              lat: result.location.lat,
+              long: result.location.long,
+              square_meters: result.location.square_meters,
+            },
+            status: statusToString(result.status),
+            legal_identifier: getNullableString(result.legal_identifier),
+            verifier: getNullableString(result.verifier),
+            document_hash: getNullableString(result.document_hash),
+            images_hash: getNullableString(result.images_hash),
+          });
+        }
+      } catch (e: any) {
+        console.log(e)
+        setErr("Failed to fetch land detail");
+        setLand(null);
+      }
+      setLoading(false);
+    };
+    if (id) fetchLand();
+  }, [id]);
+
+  const polygon: [number, number][] = land && land.location.lat.length > 0 && land.location.long.length > 0
+    ? [
+        [parseFloat(land.location.long[0]) - 0.001, parseFloat(land.location.lat[0]) - 0.001],
+        [parseFloat(land.location.long[0]) + 0.001, parseFloat(land.location.lat[0]) - 0.001],
+        [parseFloat(land.location.long[0]) + 0.001, parseFloat(land.location.lat[0]) + 0.001],
+        [parseFloat(land.location.long[0]) - 0.001, parseFloat(land.location.lat[0]) + 0.001],
+        [parseFloat(land.location.long[0]) - 0.001, parseFloat(land.location.lat[0]) - 0.001]
+      ]
+    : [];
+
+  const coordinates: [number, number] =
+    land && land.location.lat.length > 0 && land.location.long.length > 0
+      ? [parseFloat(land.location.lat[0]), parseFloat(land.location.long[0])]
+      : [0, 0];
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center text-lg">Loading land detail...</div>
+      </div>
+    );
+  }
+  if (err || !land) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center text-destructive">{err || "Land not found"}</div>
+        <div className="mt-4 flex justify-center">
+          <Button variant="outline" asChild>
+            <Link to="/">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Marketplace
+            </Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Header */}
       <div className="flex items-center gap-4 mb-6">
         <Button variant="outline" size="sm" asChild>
           <Link to="/">
@@ -87,14 +180,14 @@ const LandDetail = () => {
           {/* Title and Status */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold mb-2">{land.title_name}</h1>
+              <h1 className="text-3xl font-bold mb-2">{land.title}</h1>
               <div className="flex items-center text-muted-foreground">
                 <MapPin className="h-4 w-4 mr-1" />
                 {owner.detail.city}, {owner.detail.country}
               </div>
             </div>
             <Badge className={getStatusColor(land.status)} variant="secondary">
-              {land.status}
+              {land.status.replace("_", " ")}
             </Badge>
           </div>
 
@@ -107,11 +200,10 @@ const LandDetail = () => {
               <MapView
                 center={coordinates}
                 zoom={15}
-                polygon={polygon}
                 markers={[
                   {
                     position: coordinates,
-                    title: land.title_name,
+                    title: land.title,
                     price: "2.5 ETH"
                   }
                 ]}
@@ -163,23 +255,47 @@ const LandDetail = () => {
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Total Area</span>
-                  <span className="font-semibold">{land.location.total_area}</span>
+                  <span className="font-semibold">{land.location.square_meters} m²</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Status</span>
                   <Badge className={getStatusColor(land.status)} variant="secondary">
-                    {land.status}
+                    {land.status.replace("_", " ")}
                   </Badge>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Land ID</span>
-                  <span className="font-mono text-sm">{land.item_id}</span>
+                  <span className="font-mono text-sm">{land.id}</span>
                 </div>
+                {land.legal_identifier && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Legal Identifier</span>
+                    <span className="font-mono text-sm">{land.legal_identifier}</span>
+                  </div>
+                )}
+                {land.document_hash && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Document Hash</span>
+                    <span className="font-mono text-sm">{land.document_hash}</span>
+                  </div>
+                )}
+                {land.images_hash && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Images Hash</span>
+                    <span className="font-mono text-sm">{land.images_hash}</span>
+                  </div>
+                )}
+                {land.verifier && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Verifier</span>
+                    <span className="font-mono text-sm">{land.verifier}</span>
+                  </div>
+                )}
               </div>
 
-              {land.status === 'LISTED' && (
+              {land.status === "FOR_SALE" && (
                 <Button asChild className="btn-web3 w-full">
-                  <Link to={`/buy/${land.item_id}`}>
+                  <Link to={`/buy/${land.id}`}>
                     Buy This Land
                   </Link>
                 </Button>

@@ -37,10 +37,9 @@ const MapView: React.FC<MapViewProps> = ({
     // Initialize map
     mapInstance.current = L.map(mapRef.current).setView(center, zoom);
 
-    // Add tile layer with dark theme
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-      attribution: '© OpenStreetMap contributors © CARTO',
-      subdomains: 'abcd',
+    // Add tile layer with light theme
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
       maxZoom: 19
     }).addTo(mapInstance.current);
 
@@ -63,10 +62,10 @@ const MapView: React.FC<MapViewProps> = ({
       const customIcon = L.divIcon({
         html: `
           <div class="flex flex-col items-center">
-            <div class="bg-web3-cyan text-background rounded-full w-8 h-8 flex items-center justify-center text-xs font-bold animate-glow">
+            <div class="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-xs font-bold shadow-lg">
               L
             </div>
-            ${marker.price ? `<div class="bg-card text-foreground text-xs px-2 py-1 rounded mt-1 border border-border whitespace-nowrap">${marker.price}</div>` : ''}
+            ${marker.price ? `<div class="bg-white text-gray-800 text-xs px-2 py-1 rounded mt-1 border border-gray-300 whitespace-nowrap shadow-md">${marker.price}</div>` : ''}
           </div>
         `,
         className: 'custom-marker',
@@ -78,7 +77,7 @@ const MapView: React.FC<MapViewProps> = ({
         .bindPopup(`
           <div class="text-center">
             <h3 class="font-semibold text-lg mb-2">${marker.title}</h3>
-            ${marker.price ? `<p class="text-web3-cyan font-mono text-xl">${marker.price}</p>` : ''}
+            ${marker.price ? `<p class="text-blue-600 font-mono text-xl">${marker.price}</p>` : ''}
           </div>
         `)
         .addTo(mapInstance.current!);
@@ -95,7 +94,7 @@ const MapView: React.FC<MapViewProps> = ({
   return (
     <div
       ref={mapRef}
-      className={`w-full rounded-lg overflow-hidden ${className}`}
+      className={`w-full rounded-lg overflow-hidden border ${className}`}
       style={{ height }}
     />
   );
