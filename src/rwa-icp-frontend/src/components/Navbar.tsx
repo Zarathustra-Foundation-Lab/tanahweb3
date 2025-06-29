@@ -77,16 +77,7 @@ const Navbar = () => {
                 >
                   Add Item
                 </Link>
-                <Link
-                  to="/profile/collection"
-                  className={`text-sm font-medium transition-colors hover:text-web3-cyan ${
-                    isActive("/profile/collection")
-                      ? "text-web3-cyan"
-                      : "text-muted-foreground"
-                  }`}
-                >
-                  My Collection
-                </Link>
+
                 <Link
                   to="/sell"
                   className={`text-sm font-medium transition-colors hover:text-web3-cyan ${
@@ -95,7 +86,7 @@ const Navbar = () => {
                       : "text-muted-foreground"
                   }`}
                 >
-                  Sell Land
+                  Transaction
                 </Link>
               </>
             )}
@@ -110,12 +101,18 @@ const Navbar = () => {
                   size="sm"
                   asChild
                 >
-                  <Link
-                    to="/profile/demo-user"
-                    className="flex items-center space-x-2"
-                  >
-                    <User className="h-4 w-4" />
-                  </Link>
+                  {isAuthenticated && user.username && (
+                    <Link
+                      to={`/profile/${user.username.toLowerCase()}`}
+                      className={`text-sm font-medium transition-colors hover:text-web3-cyan ${
+                        isActive(`/profile/${user.username}`)
+                          ? "text-web3-cyan"
+                          : "text-muted-foreground"
+                      }`}
+                    >
+                      <User className="h-4 w-4" />
+                    </Link>
+                  )}
                 </Button>
                 <Button
                   variant="outline"

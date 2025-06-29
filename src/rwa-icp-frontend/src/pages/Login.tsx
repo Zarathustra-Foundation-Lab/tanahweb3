@@ -149,7 +149,7 @@ export default function Login() {
       // Asumsi createUserService().signup(username, User) menerima username dan objek User
       // Note: Jika username sudah ada di User object, mungkin tidak perlu parameter terpisah di signup
       const { "0": success } = await createUserService(actor).signup(
-        payloadToSend.username,
+        payloadToSend.username.toLowerCase(),
         payloadToSend
       ); // Gunakan payloadToSend
       setIsUserRegistered(success); // Set user sebagai terdaftar setelah sukses

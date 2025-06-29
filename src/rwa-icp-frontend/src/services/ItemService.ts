@@ -46,6 +46,18 @@ export const createItemService = (
       return await actor.createItem(payload);
     },
 
+    setListingItem: async (id: number) => {
+      const [success, message] = await actor.setListingItem(BigInt(id));
+
+      return { success, message };
+    },
+
+    requestBuy: async (itemId: number) => {
+      const [success, message] = await actor.requestBuyItem(BigInt(itemId));
+
+      return { success, message };
+    },
+
     // Tambahkan fungsi-fungsi lain yang terkait dengan item di sini
   };
 };

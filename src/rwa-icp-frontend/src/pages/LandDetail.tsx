@@ -460,7 +460,7 @@ const LandDetail = () => {
                   variant="outline"
                   className="w-full btn-web3-outline"
                 >
-                  <Link to={`/profile/${owner.username}`}>
+                  <Link to={`/profile/${owner.username.toLowerCase()}`}>
                     Lihat Profil Pemilik
                   </Link>
                 </Button>

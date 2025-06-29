@@ -32,7 +32,7 @@ type Land = {
 };
 
 const Index = () => {
-  const { actor } = useAuthContext();
+  const { actor, principal: myPrincipal } = useAuthContext();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -205,6 +205,7 @@ const Index = () => {
                     key={land.id}
                     {...land}
                     owner={land.current_owner}
+                    myPrincipal={myPrincipal}
                   />
                 ))}
               </div>

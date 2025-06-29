@@ -15,7 +15,6 @@ import {
   Instagram,
   Facebook,
 } from "lucide-react";
-import type { StatusItem } from "@/types";
 import { useEffect, useState } from "react";
 import { createUserService } from "@/services/UserService";
 import { useAuthContext } from "@/services/auth";
@@ -23,21 +22,24 @@ import { createItemService } from "@/services/ItemService";
 
 import { getNullableCandidString } from "@/lib/utils";
 
-import { Item, UserProfile as UserProfileType } from "@/types/type";
+import { Item, Status, UserProfile as UserProfileType } from "@/types/type";
 import { Principal } from "@dfinity/principal";
 
 const UserProfile = () => {
+  const { userId: username } = useParams();
+  const { actor, principal: myPrincipal } = useAuthContext();
+
+  const userService = createUserService();
+
+  // const myItemService = createItemService(actor);
+  const itemService = createItemService(actor);
+
   const [userLands, setUserLands] = useState<Item[]>([]);
   const [stats, setStats] = useState({
     landsOwned: 0,
     landsSold: 0,
     totalVolume: "0 ETH",
   });
-  const { userId: username } = useParams();
-  const { actor, principal: myPrincipal } = useAuthContext();
-  const userService = createUserService(actor);
-  const itemService = createItemService(actor);
-
   const [user, setUser] = useState<UserProfileType>({
     principal_id: undefined,
     username: "",
@@ -64,47 +66,62 @@ const UserProfile = () => {
   useEffect(() => {
     (async () => {
       // Ambil data user
-      const { "0": result } = await userService.getUserByUsername(username);
+      const { "0": result } = await userService.getUserByUsername(
+        username.toLowerCase()
+      );
 
-      setUser({
-        principal_id: result.principal_id,
-        username: getNullableCandidString(result.username),
-        detail: {
-          first_name: getNullableCandidString(result.detail.first_name),
-          last_name: getNullableCandidString(result.detail.last_name),
-          city: getNullableCandidString(result.detail.city),
-          country: getNullableCandidString(result.detail.country),
-          bio: getNullableCandidString(result.detail.bio),
-        },
-        contact: {
-          twitter: getNullableCandidString(result.contact.twitter),
-          instagram: getNullableCandidString(result.contact.instagram),
-          tiktok: getNullableCandidString(result.contact.tiktok),
-          youtube: getNullableCandidString(result.contact.youtube),
-          discord: getNullableCandidString(result.contact.discord),
-          twitch: getNullableCandidString(result.contact.twitch),
-          website: getNullableCandidString(result.contact.website),
-          facebook: getNullableCandidString(result.contact.facebook),
-        },
-      });
-
-      try {
-        const lands = await itemService.getUserCollection();
-        setUserLands(lands);
-
-        setStats({
-          landsOwned: lands.length,
-          landsSold: 0,
-          totalVolume: "0 ETH",
-        });
-      } catch (e) {
-        setUserLands([]);
-        setStats({
-          landsOwned: 0,
-          landsSold: 0,
-          totalVolume: "0 ETH",
+      if (result) {
+        setUser({
+          principal_id: result.principal_id,
+          username: getNullableCandidString(result.username),
+          detail: {
+            first_name: getNullableCandidString(result.detail.first_name),
+            last_name: getNullableCandidString(result.detail.last_name),
+            city: getNullableCandidString(result.detail.city),
+            country: getNullableCandidString(result.detail.country),
+            bio: getNullableCandidString(result.detail.bio),
+          },
+          contact: {
+            twitter: getNullableCandidString(result.contact.twitter),
+            instagram: getNullableCandidString(result.contact.instagram),
+            tiktok: getNullableCandidString(result.contact.tiktok),
+            youtube: getNullableCandidString(result.contact.youtube),
+            discord: getNullableCandidString(result.contact.discord),
+            twitch: getNullableCandidString(result.contact.twitch),
+            website: getNullableCandidString(result.contact.website),
+            facebook: getNullableCandidString(result.contact.facebook),
+          },
         });
       }
+
+      const lands = await itemService.getUserCollection();
+      // loop lands
+      let _lands: Item[] = [];
+      lands.forEach((land) => {
+        let _status = land.status;
+
+        _lands.push({
+          current_owner: land.current_owner,
+          title: land.title,
+          description: land.description,
+          document_hash: land.document_hash[0],
+          id: Number(land.id),
+          location: land.location,
+          price: Number(land.price),
+          images_hash: land.images_hash[0],
+          status: Object.keys(land.status)[0] as Status,
+          verifier: land.verifier[0] ? land.verifier[0].toString() : null,
+          legal_identifier: land.legal_identifier[0],
+        });
+      });
+
+      setUserLands(_lands);
+
+      setStats({
+        landsOwned: lands.length,
+        landsSold: 0,
+        totalVolume: "0 ICP",
+      });
     })();
   }, []);
 
@@ -121,7 +138,9 @@ const UserProfile = () => {
               <CardTitle className="text-xl">
                 {user.detail.first_name} {user.detail.last_name}
               </CardTitle>
-              <p className="text-sm text-muted-foreground">@{user.username}</p>
+              <p className="text-sm text-muted-foreground">
+                @{user.username.toLowerCase()}
+              </p>
             </CardHeader>
 
             <CardContent className="space-y-6">
@@ -138,35 +157,32 @@ const UserProfile = () => {
                 </h3>
 
                 <div className="space-y-3">
-                  <div className="flex items-center space-x-3">
-                    <Link className="h-4 w-4 text-web3-cyan" />
-                    <div>
-                      <p className="text-sm font-medium">Web</p>
-                      <p className="text-sm text-muted-foreground">
-                        {user.contact.website}
-                      </p>
+                  {user.contact.website && (
+                    <div className="flex items-center space-x-3">
+                      <Link className="h-4 w-4 text-web3-cyan" />
+                      <a href={user.contact.website}>
+                        <p className="text-sm font-medium">Web</p>
+                      </a>
                     </div>
-                  </div>
+                  )}
 
-                  <div className="flex items-center space-x-3">
-                    <Instagram className="h-4 w-4 text-web3-cyan" />
-                    <div>
-                      <p className="text-sm font-medium">Instagram</p>
-                      <p className="text-sm text-muted-foreground">
-                        {user.contact.instagram}
-                      </p>
+                  {user.contact.instagram && (
+                    <div className="flex items-center space-x-3">
+                      <Instagram className="h-4 w-4 text-web3-cyan" />
+                      <a href={user.contact.instagram}>
+                        <p className="text-sm font-medium">Instagram</p>
+                      </a>
                     </div>
-                  </div>
+                  )}
 
-                  <div className="flex items-center space-x-3">
-                    <Facebook className="h-4 w-4 text-web3-cyan" />
-                    <div>
-                      <p className="text-sm font-medium">facebook</p>
-                      <p className="text-sm text-muted-foreground">
-                        {user.contact.facebook}
-                      </p>
+                  {user.contact.facebook && (
+                    <div className="flex items-center space-x-3">
+                      <Facebook className="h-4 w-4 text-web3-cyan" />
+                      <a href={user.contact.facebook}>
+                        <p className="text-sm font-medium">Facebook</p>
+                      </a>
                     </div>
-                  </div>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
@@ -223,6 +239,9 @@ const UserProfile = () => {
                 {userLands.map((land) => (
                   <LandCard
                     key={land.id}
+                    myPrincipal={myPrincipal}
+                    thisPrincipalOwner={user.principal_id}
+                    username={user.username}
                     id={land.id.toString()}
                     title={land.title}
                     description={land.description}
@@ -259,7 +278,11 @@ const UserProfile = () => {
 
 export default UserProfile;
 
-function Stats({ stats }: { stats: { landsOwned: number; landsSold: number; totalVolume: string } }) {
+function Stats({
+  stats,
+}: {
+  stats: { landsOwned: number; landsSold: number; totalVolume: string };
+}) {
   return (
     <div className="space-y-3">
       <div className="flex justify-between items-center">
@@ -278,7 +301,11 @@ function Stats({ stats }: { stats: { landsOwned: number; landsSold: number; tota
   );
 }
 
-function ActivityStats({ stats }: { stats: { landsOwned: number; landsSold: number; totalVolume: string } }) {
+function ActivityStats({
+  stats,
+}: {
+  stats: { landsOwned: number; landsSold: number; totalVolume: string };
+}) {
   return (
     <div className="grid md:grid-cols-3 gap-6">
       <Card className="card-web3 text-center">
