@@ -14,21 +14,9 @@ import Navbar from "./components/Navbar";
 import { AuthProvider, useAuthContext } from "./services/auth";
 import Login from "./pages/Login";
 
+import ProtectedRoute from "./components/ProtectedRoute";
+
 const queryClient = new QueryClient();
-
-const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
-  const { isAuthenticated, isInitializing } = useAuthContext();
-
-  if (isInitializing) {
-    return <div>Loading...</div>; // bisa spinner juga
-  }
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
-  return children;
-};
 
 const App = () => {
   return (

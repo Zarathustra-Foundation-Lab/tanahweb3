@@ -2,15 +2,47 @@ import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { User, Map } from "lucide-react";
 import { useAuthContext } from "@/services/auth";
+import { useEffect, useState } from "react";
+
+import { User as UserType } from "@/types";
+import { createUserService } from "@/services/UserService";
 
 const Navbar = () => {
-  const { logout, isAuthenticated, principal } = useAuthContext();
+  const {
+    logout,
+    isAuthenticated,
+    principal: currentPrincipal,
+  } = useAuthContext();
 
   const location = useLocation();
+
+  const [user, setUser] = useState({
+    username: "",
+    principal: "",
+    first_name: "",
+    last_name: "",
+  });
 
   const isActive = (path: string) => {
     return location.pathname === path;
   };
+
+  useEffect(() => {
+    (async () => {
+      const data = await createUserService().getUserByPrincipal(
+        currentPrincipal
+      );
+      if (data.length > 0) {
+        const userData = data[0];
+        setUser({
+          username: userData.username,
+          principal: userData.principal_id.toText(),
+          first_name: userData.detail.first_name,
+          last_name: userData.detail.last_name,
+        });
+      }
+    })();
+  }, [currentPrincipal, createUserService]);
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-sm">
@@ -30,16 +62,20 @@ const Navbar = () => {
                 isActive("/") ? "text-web3-cyan" : "text-muted-foreground"
               }`}
             >
-              Marketplace
+              Home
             </Link>
-            <Link
-              to="/sell"
-              className={`text-sm font-medium transition-colors hover:text-web3-cyan ${
-                isActive("/sell") ? "text-web3-cyan" : "text-muted-foreground"
-              }`}
-            >
-              Sell Land
-            </Link>
+
+            {/* guard */}
+            {isAuthenticated && user && (
+              <Link
+                to="/sell"
+                className={`text-sm font-medium transition-colors hover:text-web3-cyan ${
+                  isActive("/sell") ? "text-web3-cyan" : "text-muted-foreground"
+                }`}
+              >
+                Sell Land
+              </Link>
+            )}
           </div>
 
           <div className="flex items-center space-x-4">
@@ -59,7 +95,8 @@ const Navbar = () => {
                   size="sm"
                   className="hover:bg-transparent hover:text-black"
                 >
-                  {principal.toText().slice(0, 9)}
+                  {/* {currentPrincipal.toText().slice(0, 9)} */}
+                  {user.username ?? "tidak ada"}
                 </Button>
                 <Button onClick={logout} variant={"destructive"} size="sm">
                   Logout
