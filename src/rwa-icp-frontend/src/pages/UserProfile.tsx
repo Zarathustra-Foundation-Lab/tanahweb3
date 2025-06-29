@@ -5,7 +5,16 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 
 import LandCard from "@/components/LandCard";
-import { User, Phone, MessageCircle, MapPin, Calendar } from "lucide-react";
+import {
+  User,
+  Phone,
+  MessageCircle,
+  MapPin,
+  Calendar,
+  Link,
+  Instagram,
+  Facebook,
+} from "lucide-react";
 import type { StatusItem } from "@/types";
 import { useEffect, useState } from "react";
 import { createUserService } from "@/services/UserService";
@@ -73,6 +82,13 @@ const userLands: Item[] = [
   },
 ];
 
+// Mock user's lands with correct StatusItem type
+const stats = {
+  landsOwned: 15,
+  landsSold: 12,
+  totalVolume: "28.7 ETH",
+};
+
 const UserProfile = () => {
   const { userId: username } = useParams();
   const { actor, principal: myPrincipal } = useAuthContext();
@@ -99,16 +115,6 @@ const UserProfile = () => {
       facebook: null,
     },
   });
-
-  // Mock user data matching the new types
-
-  // Mock user's lands with correct StatusItem type
-
-  const stats = {
-    landsOwned: 15,
-    landsSold: 12,
-    totalVolume: "28.7 ETH",
-  };
 
   // fetch data user
   useEffect(() => {
@@ -157,28 +163,7 @@ const UserProfile = () => {
 
             <CardContent className="space-y-6">
               {/* Stats */}
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">
-                    Lands Owned
-                  </span>
-                  <Badge variant="secondary">{stats.landsOwned}</Badge>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">
-                    Lands Sold
-                  </span>
-                  <Badge variant="secondary">{stats.landsSold}</Badge>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">
-                    Total Volume
-                  </span>
-                  <Badge className="bg-web3-green text-white">
-                    {stats.totalVolume}
-                  </Badge>
-                </div>
-              </div>
+              <Stats />
 
               <Separator />
 
@@ -191,7 +176,7 @@ const UserProfile = () => {
 
                 <div className="space-y-3">
                   <div className="flex items-center space-x-3">
-                    <Phone className="h-4 w-4 text-web3-cyan" />
+                    <Link className="h-4 w-4 text-web3-cyan" />
                     <div>
                       <p className="text-sm font-medium">Web</p>
                       <p className="text-sm text-muted-foreground">
@@ -201,7 +186,7 @@ const UserProfile = () => {
                   </div>
 
                   <div className="flex items-center space-x-3">
-                    <MessageCircle className="h-4 w-4 text-web3-cyan" />
+                    <Instagram className="h-4 w-4 text-web3-cyan" />
                     <div>
                       <p className="text-sm font-medium">Instagram</p>
                       <p className="text-sm text-muted-foreground">
@@ -211,7 +196,7 @@ const UserProfile = () => {
                   </div>
 
                   <div className="flex items-center space-x-3">
-                    <MessageCircle className="h-4 w-4 text-web3-cyan" />
+                    <Facebook className="h-4 w-4 text-web3-cyan" />
                     <div>
                       <p className="text-sm font-medium">facebook</p>
                       <p className="text-sm text-muted-foreground">
@@ -259,36 +244,8 @@ const UserProfile = () => {
               </p>
             </CardContent>
           </Card>
-
           {/* Activity Stats */}
-          <div className="grid md:grid-cols-3 gap-6">
-            <Card className="card-web3 text-center">
-              <CardContent className="pt-6">
-                <div className="text-3xl font-bold web3-gradient mb-2">
-                  {stats.landsOwned}
-                </div>
-                <p className="text-muted-foreground">Lands Currently Owned</p>
-              </CardContent>
-            </Card>
-
-            <Card className="card-web3 text-center">
-              <CardContent className="pt-6">
-                <div className="text-3xl font-bold web3-gradient mb-2">
-                  {stats.landsSold}
-                </div>
-                <p className="text-muted-foreground">Successful Sales</p>
-              </CardContent>
-            </Card>
-
-            <Card className="card-web3 text-center">
-              <CardContent className="pt-6">
-                <div className="text-3xl font-bold web3-gradient mb-2 font-mono">
-                  {stats.totalVolume}
-                </div>
-                <p className="text-muted-foreground">Total Trade Volume</p>
-              </CardContent>
-            </Card>
-          </div>
+          <ActivityStats />
 
           {/* User's Lands */}
           <Card className="card-web3">
@@ -337,3 +294,55 @@ const UserProfile = () => {
 };
 
 export default UserProfile;
+
+function Stats() {
+  return (
+    <div className="space-y-3">
+      <div className="flex justify-between items-center">
+        <span className="text-sm text-muted-foreground">Lands Owned</span>
+        <Badge variant="secondary">{stats.landsOwned}</Badge>
+      </div>
+      <div className="flex justify-between items-center">
+        <span className="text-sm text-muted-foreground">Lands Sold</span>
+        <Badge variant="secondary">{stats.landsSold}</Badge>
+      </div>
+      <div className="flex justify-between items-center">
+        <span className="text-sm text-muted-foreground">Total Volume</span>
+        <Badge className="bg-web3-green text-white">{stats.totalVolume}</Badge>
+      </div>
+    </div>
+  );
+}
+
+function ActivityStats() {
+  return (
+    <div className="grid md:grid-cols-3 gap-6">
+      <Card className="card-web3 text-center">
+        <CardContent className="pt-6">
+          <div className="text-3xl font-bold web3-gradient mb-2">
+            {stats.landsOwned}
+          </div>
+          <p className="text-muted-foreground">Lands Currently Owned</p>
+        </CardContent>
+      </Card>
+
+      <Card className="card-web3 text-center">
+        <CardContent className="pt-6">
+          <div className="text-3xl font-bold web3-gradient mb-2">
+            {stats.landsSold}
+          </div>
+          <p className="text-muted-foreground">Successful Sales</p>
+        </CardContent>
+      </Card>
+
+      <Card className="card-web3 text-center">
+        <CardContent className="pt-6">
+          <div className="text-3xl font-bold web3-gradient mb-2 font-mono">
+            {stats.totalVolume}
+          </div>
+          <p className="text-muted-foreground">Total Trade Volume</p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
