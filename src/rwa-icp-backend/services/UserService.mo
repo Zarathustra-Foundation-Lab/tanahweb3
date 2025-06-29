@@ -4,19 +4,19 @@ import HashMap "mo:base/HashMap";
 import User "../types/User";
 module UserService {
 
-    public func Signup(users : User.Users, usernames : User.Usernames, caller : Principal, _username : Text, _payload : User.User) : Result.Result<(Bool, HashMap.HashMap<Principal, User.User>, HashMap.HashMap<Text, Principal>), Text> {
+    public func Signup(users : User.Users, usernames : User.Usernames, caller : Principal, _username : Text, _payload : User.User) : Result.Result<(Bool, Text), (Bool, Text)> {
         if (users.get(caller) != null) {
-            return #err("User has already exist with this address");
+            return #err(false, "User has already exist with this address");
         };
         if (usernames.get(_username) != null) {
-            return #err("User has already exist with this username");
+            return #err(false, "User has already exist with this username");
         };
 
         // push data to mapping
         users.put(caller, _payload);
         usernames.put(_username, caller);
 
-        return #ok(true, users, usernames);
+        return #ok(true, "Success register user");
     };
 
     public func _updateDetail(users : User.Users, caller : Principal, _payload : User.Detail) : Result.Result<(Bool, Text), (Bool, Text)> {

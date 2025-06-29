@@ -12,6 +12,7 @@ import NotFound from "./pages/NotFound";
 import Navbar from "./components/Navbar";
 
 import { AuthProvider, useAuthContext } from "./services/auth";
+import Login from "./pages/Login";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +43,8 @@ const App = () => {
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/land/:id" element={<LandDetail />} />
+
+                <Route path="/login" element={<Login />} />
 
                 {/* need auth */}
                 <Route

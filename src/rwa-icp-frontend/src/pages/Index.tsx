@@ -10,7 +10,9 @@ import {
 } from "@/components/ui/select";
 import LandCard from "@/components/LandCard";
 import { Search, Map, Users, Shield } from "lucide-react";
-import { rwa_icp_backend } from "../../../declarations/rwa-icp-backend";
+
+import { createItemService } from "@/services/ItemService";
+import { useAuthContext } from "@/services/auth";
 
 type Land = {
   id: string;
@@ -30,6 +32,8 @@ type Land = {
 };
 
 const Index = () => {
+  const { actor } = useAuthContext();
+
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [lands, setLands] = useState<Land[]>([]);
@@ -41,7 +45,7 @@ const Index = () => {
       setLoading(true);
       setError(null);
       try {
-        const items = await rwa_icp_backend.getItems();
+        const items = await createItemService().getItems();
         console.log(items);
 
         const mappedLands: Land[] = items.map((item: any) => ({

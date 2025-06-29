@@ -4,8 +4,7 @@ import { User, Map } from "lucide-react";
 import { useAuthContext } from "@/services/auth";
 
 const Navbar = () => {
-  const { login, logout, isAuthenticated, isInitializing, principal } =
-    useAuthContext();
+  const { logout, isAuthenticated, principal } = useAuthContext();
 
   const location = useLocation();
 
@@ -60,16 +59,18 @@ const Navbar = () => {
                   size="sm"
                   className="hover:bg-transparent hover:text-black"
                 >
-                  {principal.slice(0, 9)}
+                  {principal.toText().slice(0, 9)}
                 </Button>
                 <Button onClick={logout} variant={"destructive"} size="sm">
                   Logout
                 </Button>
               </>
             ) : (
-              <Button onClick={login} className="btn-web3" size="sm">
-                Login
-              </Button>
+              <Link to={"/login"}>
+                <Button className="btn-web3" size="sm">
+                  Login
+                </Button>
+              </Link>
             )}
           </div>
         </div>

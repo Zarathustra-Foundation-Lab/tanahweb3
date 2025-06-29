@@ -52,14 +52,14 @@ actor class RwaICP() = this {
   // ======= User Function ======= //
   ////////////////////////////////
 
-  public shared ({ caller }) func Signup(_username : Text, _payload : User.User) : async (Bool, ?User.User) {
+  public shared ({ caller }) func Signup(_username : Text, _payload : User.User) : async (Bool, Text) {
 
     switch (UserService.Signup(users, usernames, caller, _username, _payload)) {
-      case (#ok(success, newUsers, _newUsernames)) {
-        return (success, newUsers.get(caller));
+      case (#ok(success, message)) {
+        return (success, message);
       };
-      case (#err(_err)) {
-        return (false, null);
+      case (#err(err, message)) {
+        return (err, message);
       };
     };
   };
@@ -106,7 +106,7 @@ actor class RwaICP() = this {
   public query func getItems() : async [Item.Item] {
     return Iter.toArray(items.vals());
   };
-  
+
   public query func getItem(id : Nat) : async ?Item.Item {
     switch (items.get(id)) {
       case (null) return null;
