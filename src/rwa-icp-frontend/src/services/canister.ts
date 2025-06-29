@@ -76,6 +76,4 @@ export const createCanisterActor = async (
 
 // Export a default anonymous actor instance for public (non-authenticated) calls.
 // This actor should not be used for calls requiring a specific user identity.
-export const canister_actor = await createCanisterActor({
-  // Host and identity will default to anonymous and local/mainnet based on environment.
-});
+export default createCanisterActor;

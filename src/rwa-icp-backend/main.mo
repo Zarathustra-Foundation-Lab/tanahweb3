@@ -120,7 +120,7 @@ actor class RwaICP() = this {
       return [];
     };
 
-    // ambil koleksi ID milik user
+    // ambil koleksi ID milifk user
     switch (collection.get(caller)) {
       case (null) return [];
 
