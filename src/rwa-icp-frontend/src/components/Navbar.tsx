@@ -4,7 +4,6 @@ import { User, Map } from "lucide-react";
 import { useAuthContext } from "@/services/auth";
 import { useEffect, useState } from "react";
 
-import { User as UserType } from "@/types";
 import { createUserService } from "@/services/UserService";
 
 const Navbar = () => {
@@ -65,37 +64,64 @@ const Navbar = () => {
               Home
             </Link>
 
-            {/* guard */}
+            {/* guard routes */}
             {isAuthenticated && user && (
-              <Link
-                to="/sell"
-                className={`text-sm font-medium transition-colors hover:text-web3-cyan ${
-                  isActive("/sell") ? "text-web3-cyan" : "text-muted-foreground"
-                }`}
-              >
-                Sell Land
-              </Link>
+              <>
+                <Link
+                  to="/item/create"
+                  className={`text-sm font-medium transition-colors hover:text-web3-cyan ${
+                    isActive("/item/create")
+                      ? "text-web3-cyan"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  Add Item
+                </Link>
+                <Link
+                  to="/profile/collection"
+                  className={`text-sm font-medium transition-colors hover:text-web3-cyan ${
+                    isActive("/profile/collection")
+                      ? "text-web3-cyan"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  My Collection
+                </Link>
+                <Link
+                  to="/sell"
+                  className={`text-sm font-medium transition-colors hover:text-web3-cyan ${
+                    isActive("/sell")
+                      ? "text-web3-cyan"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  Sell Land
+                </Link>
+              </>
             )}
           </div>
 
           <div className="flex items-center space-x-4">
             {isAuthenticated ? (
               <>
-                <Button variant="outline" size="sm" asChild>
+                <Button
+                  className="hidden md:flex"
+                  variant="outline"
+                  size="sm"
+                  asChild
+                >
                   <Link
                     to="/profile/demo-user"
                     className="flex items-center space-x-2"
                   >
                     <User className="h-4 w-4" />
-                    <span className="hidden sm:block">Profile</span>
                   </Link>
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
-                  className="hover:bg-transparent hover:text-black"
+                  className="hover:bg-transparent hover:text-black md:block hidden"
                 >
-                  {/* {currentPrincipal.toText().slice(0, 9)} */}
                   {user.username ?? "tidak ada"}
                 </Button>
                 <Button onClick={logout} variant={"destructive"} size="sm">

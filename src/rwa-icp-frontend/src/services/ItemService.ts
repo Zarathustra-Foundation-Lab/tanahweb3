@@ -38,6 +38,10 @@ export const createItemService = (
       return await actor.getUserCollection();
     },
 
+    createItem: async (payload) => {
+      return await actor.createItem(payload);
+    },
+
     // Tambahkan fungsi-fungsi lain yang terkait dengan item di sini
   };
 };

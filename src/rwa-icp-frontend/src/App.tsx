@@ -11,10 +11,11 @@ import UserProfile from "./pages/UserProfile";
 import NotFound from "./pages/NotFound";
 import Navbar from "./components/Navbar";
 
-import { AuthProvider, useAuthContext } from "./services/auth";
+import { AuthProvider } from "./services/auth";
 import Login from "./pages/Login";
 
 import ProtectedRoute from "./components/ProtectedRoute";
+import CreateItem from "./pages/CreateItem";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,15 @@ const App = () => {
                 <Route path="/login" element={<Login />} />
 
                 {/* need auth */}
+                <Route
+                  path="/item/create"
+                  element={
+                    <ProtectedRoute>
+                      <CreateItem />
+                    </ProtectedRoute>
+                  }
+                />
+
                 <Route
                   path="/buy/:id"
                   element={
