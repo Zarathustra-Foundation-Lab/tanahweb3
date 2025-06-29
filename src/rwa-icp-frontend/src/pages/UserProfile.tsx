@@ -1,70 +1,77 @@
 import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import LandCard from "@/components/LandCard";
-import { User, Phone, MessageCircle, MapPin, Calendar } from "lucide-react";
-import type { User as UserType, Item, StatusItem } from "@/types";
+import { User as UserIcon, Phone, MessageCircle, MapPin } from "lucide-react";
+import type { User as UserType } from "@/types";
+import { rwa_icp_backend } from "../../../declarations/rwa-icp-backend";
 
 const UserProfile = () => {
   const { userId } = useParams();
+  const [user, setUser] = useState<UserType | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Mock user data matching the new types
-  const user: UserType = {
-    principal_id: "owner1",
-    username: "alexchen_web3",
-    detail: {
-      first_name: "Alex",
-      last_name: "Chen",
-      bio: "Web3 real estate enthusiast and early adopter of digital land ownership. Specializing in prime metaverse locations and development-ready plots.",
-      city: "New York",
-      country: "United States"
-    },
-    contact: {
-      callnumber: "+1 (555) 123-4567",
-      instagram: "@alexchen_web3",
-      whatapps: "+1 (555) 123-4567"
-    },
-    items_id: [1, 5, 6]
-  };
+  useEffect(() => {
+    const fetchUser = async () => {
+      setLoading(true);
+      try {
+        if (userId) {
+          const data = await rwa_icp_backend.getUserByUsername(userId);
 
-  // Mock user's lands with correct StatusItem type
-  const userLands = [
-    {
-      id: "1",
-      title: "Prime Digital Estate",
-      price: "2.5 ETH",
-      area: "1,000 m²",
-      status: "LISTED" as StatusItem,
-      location: "Cyber District, Metaverse",
-      owner: `${user.detail.first_name} ${user.detail.last_name}`
-    },
-    {
-      id: "5",
-      title: "Waterfront Virtual Plot",
-      price: "3.8 ETH",
-      area: "1,200 m²",
-      status: "LISTED" as StatusItem,
-      location: "Digital Shores, Web3",
-      owner: `${user.detail.first_name} ${user.detail.last_name}`
-    },
-    {
-      id: "6",
-      title: "Commercial Zone Lot",
-      price: "5.2 ETH", 
-      area: "2,500 m²",
-      status: "OWNED" as StatusItem,
-      location: "Business District, Metaverse",
-      owner: `${user.detail.first_name} ${user.detail.last_name}`
-    }
-  ];
+          if (data.length) {
+            const result = data[0];
+            setUser({
+              principal_id: result.principal_id,
+              username: result.username,
+              detail: {
+                first_name: result.detail.first_name,
+                last_name: result.detail.last_name,
+                city: result.detail.city,
+                country: result.detail.country,
+                bio: result.detail.bio ?? "",
+              },
+              contact: {
+                twitter: result.contact.twitter ?? "",
+                instagram: result.contact.instagram ?? "",
+                tiktok: result.contact.tiktok ?? "",
+                youtube: result.contact.youtube ?? "",
+                discord: result.contact.discord ?? "",
+                twitch: result.contact.twitch ?? "",
+                website: result.contact.website ?? "",
+                facebook: result.contact.facebook ?? "",
+              },
+            });
+          } else {
+            setUser(null);
+          }
+        }
+      } catch (e) {
+        setUser(null);
+      }
+      setLoading(false);
+    };
+    fetchUser();
+  }, [userId]);
 
-  const stats = {
-    landsOwned: user.items_id.length,
-    landsSold: 12,
-    totalVolume: "28.7 ETH"
-  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-96">
+        <span className="text-lg text-muted-foreground">Loading user profile...</span>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="flex justify-center items-center h-96">
+        <span className="text-lg text-muted-foreground">User not found.</span>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -74,7 +81,7 @@ const UserProfile = () => {
           <Card className="card-web3 sticky top-24">
             <CardHeader className="text-center">
               <div className="w-24 h-24 bg-gradient-to-br from-web3-cyan to-web3-purple rounded-full mx-auto mb-4 flex items-center justify-center">
-                <User className="h-12 w-12 text-white" />
+                <UserIcon className="h-12 w-12 text-white" />
               </div>
               <CardTitle className="text-xl">
                 {user.detail.first_name} {user.detail.last_name}
@@ -86,21 +93,6 @@ const UserProfile = () => {
             
             <CardContent className="space-y-6">
               {/* Stats */}
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Lands Owned</span>
-                  <Badge variant="secondary">{stats.landsOwned}</Badge>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Lands Sold</span>
-                  <Badge variant="secondary">{stats.landsSold}</Badge>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Total Volume</span>
-                  <Badge className="bg-web3-green text-white">{stats.totalVolume}</Badge>
-                </div>
-              </div>
-
               <Separator />
 
               {/* Contact Information */}
@@ -111,42 +103,79 @@ const UserProfile = () => {
                 </h3>
                 
                 <div className="space-y-3">
-                  <div className="flex items-center space-x-3">
-                    <Phone className="h-4 w-4 text-web3-cyan" />
-                    <div>
-                      <p className="text-sm font-medium">Phone</p>
-                      <p className="text-sm text-muted-foreground">{user.contact.callnumber}</p>
+                  {user.contact.twitter && (
+                    <div className="flex items-center space-x-3">
+                      <MessageCircle className="h-4 w-4 text-web3-cyan" />
+                      <div>
+                        <p className="text-sm font-medium">Twitter</p>
+                        <p className="text-sm text-muted-foreground">{user.contact.twitter}</p>
+                      </div>
                     </div>
-                  </div>
-                  
-                  <div className="flex items-center space-x-3">
-                    <MessageCircle className="h-4 w-4 text-web3-cyan" />
-                    <div>
-                      <p className="text-sm font-medium">Instagram</p>
-                      <p className="text-sm text-muted-foreground">{user.contact.instagram}</p>
+                  )}
+                  {user.contact.instagram && (
+                    <div className="flex items-center space-x-3">
+                      <MessageCircle className="h-4 w-4 text-web3-cyan" />
+                      <div>
+                        <p className="text-sm font-medium">Instagram</p>
+                        <p className="text-sm text-muted-foreground">{user.contact.instagram}</p>
+                      </div>
                     </div>
-                  </div>
-                  
-                  <div className="flex items-center space-x-3">
-                    <MessageCircle className="h-4 w-4 text-web3-cyan" />
-                    <div>
-                      <p className="text-sm font-medium">WhatsApp</p>
-                      <p className="text-sm text-muted-foreground">{user.contact.whatapps}</p>
+                  )}
+                  {user.contact.tiktok && (
+                    <div className="flex items-center space-x-3">
+                      <MessageCircle className="h-4 w-4 text-web3-cyan" />
+                      <div>
+                        <p className="text-sm font-medium">TikTok</p>
+                        <p className="text-sm text-muted-foreground">{user.contact.tiktok}</p>
+                      </div>
                     </div>
-                  </div>
+                  )}
+                  {user.contact.youtube && (
+                    <div className="flex items-center space-x-3">
+                      <MessageCircle className="h-4 w-4 text-web3-cyan" />
+                      <div>
+                        <p className="text-sm font-medium">YouTube</p>
+                        <p className="text-sm text-muted-foreground">{user.contact.youtube}</p>
+                      </div>
+                    </div>
+                  )}
+                  {user.contact.discord && (
+                    <div className="flex items-center space-x-3">
+                      <MessageCircle className="h-4 w-4 text-web3-cyan" />
+                      <div>
+                        <p className="text-sm font-medium">Discord</p>
+                        <p className="text-sm text-muted-foreground">{user.contact.discord}</p>
+                      </div>
+                    </div>
+                  )}
+                  {user.contact.twitch && (
+                    <div className="flex items-center space-x-3">
+                      <MessageCircle className="h-4 w-4 text-web3-cyan" />
+                      <div>
+                        <p className="text-sm font-medium">Twitch</p>
+                        <p className="text-sm text-muted-foreground">{user.contact.twitch}</p>
+                      </div>
+                    </div>
+                  )}
+                  {user.contact.website && (
+                    <div className="flex items-center space-x-3">
+                      <MessageCircle className="h-4 w-4 text-web3-cyan" />
+                      <div>
+                        <p className="text-sm font-medium">Website</p>
+                        <p className="text-sm text-muted-foreground">{user.contact.website}</p>
+                      </div>
+                    </div>
+                  )}
+                  {user.contact.facebook && (
+                    <div className="flex items-center space-x-3">
+                      <MessageCircle className="h-4 w-4 text-web3-cyan" />
+                      <div>
+                        <p className="text-sm font-medium">Facebook</p>
+                        <p className="text-sm text-muted-foreground">{user.contact.facebook}</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
-
-                <div className="grid grid-cols-2 gap-2">
-                  <Button size="sm" variant="outline" className="text-xs">
-                    <Phone className="h-3 w-3 mr-1" />
-                    Call
-                  </Button>
-                  <Button size="sm" variant="outline" className="text-xs">
-                    <MessageCircle className="h-3 w-3 mr-1" />
-                    Message
-                  </Button>
-                </div>
-              </div>
 
               <Separator />
 
@@ -173,60 +202,22 @@ const UserProfile = () => {
             </CardContent>
           </Card>
 
-          {/* Activity Stats */}
-          <div className="grid md:grid-cols-3 gap-6">
-            <Card className="card-web3 text-center">
-              <CardContent className="pt-6">
-                <div className="text-3xl font-bold web3-gradient mb-2">
-                  {stats.landsOwned}
-                </div>
-                <p className="text-muted-foreground">Lands Currently Owned</p>
-              </CardContent>
-            </Card>
-            
-            <Card className="card-web3 text-center">
-              <CardContent className="pt-6">
-                <div className="text-3xl font-bold web3-gradient mb-2">
-                  {stats.landsSold}
-                </div>
-                <p className="text-muted-foreground">Successful Sales</p>
-              </CardContent>
-            </Card>
-            
-            <Card className="card-web3 text-center">
-              <CardContent className="pt-6">
-                <div className="text-3xl font-bold web3-gradient mb-2 font-mono">
-                  {stats.totalVolume}
-                </div>
-                <p className="text-muted-foreground">Total Trade Volume</p>
-              </CardContent>
-            </Card>
-          </div>
-
           {/* User's Lands */}
           <Card className="card-web3">
             <CardHeader>
               <CardTitle className="flex items-center">
                 <MapPin className="h-5 w-5 mr-2" />
-                {user.detail.first_name}'s Lands ({userLands.length})
+                {user.detail.first_name}'s Lands (0)
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {userLands.map((land) => (
-                  <LandCard key={land.id} {...land} />
-                ))}
+              <div className="text-center py-8">
+                <MapPin className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No lands available</h3>
+                <p className="text-muted-foreground">
+                  {user.detail.first_name} doesn't have any lands listed for sale at the moment.
+                </p>
               </div>
-              
-              {userLands.length === 0 && (
-                <div className="text-center py-8">
-                  <MapPin className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No lands available</h3>
-                  <p className="text-muted-foreground">
-                    {user.detail.first_name} doesn't have any lands listed for sale at the moment.
-                  </p>
-                </div>
-              )}
             </CardContent>
           </Card>
         </div>
