@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "setup": "npm i && dfx canister create rwa-icp-backend && dfx generate rwa-icp-backend && dfx deploy",
+    "dev": "vite",
     "start": "vite --port 3000",
     "prebuild": "dfx generate",
     "build": "tsc && vite build",

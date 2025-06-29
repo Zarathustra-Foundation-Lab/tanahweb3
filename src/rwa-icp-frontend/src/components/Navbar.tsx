@@ -1,9 +1,12 @@
-
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { User, Map } from "lucide-react";
+import { useAuthContext } from "@/services/auth";
 
 const Navbar = () => {
+  const { login, logout, isAuthenticated, isInitializing, principal } =
+    useAuthContext();
+
   const location = useLocation();
 
   const isActive = (path: string) => {
@@ -25,7 +28,7 @@ const Navbar = () => {
             <Link
               to="/"
               className={`text-sm font-medium transition-colors hover:text-web3-cyan ${
-                isActive('/') ? 'text-web3-cyan' : 'text-muted-foreground'
+                isActive("/") ? "text-web3-cyan" : "text-muted-foreground"
               }`}
             >
               Marketplace
@@ -33,7 +36,7 @@ const Navbar = () => {
             <Link
               to="/sell"
               className={`text-sm font-medium transition-colors hover:text-web3-cyan ${
-                isActive('/sell') ? 'text-web3-cyan' : 'text-muted-foreground'
+                isActive("/sell") ? "text-web3-cyan" : "text-muted-foreground"
               }`}
             >
               Sell Land
@@ -41,15 +44,33 @@ const Navbar = () => {
           </div>
 
           <div className="flex items-center space-x-4">
-            <Button variant="outline" size="sm" asChild>
-              <Link to="/profile/demo-user" className="flex items-center space-x-2">
-                <User className="h-4 w-4" />
-                <span className="hidden sm:block">Profile</span>
-              </Link>
-            </Button>
-            <Button className="btn-web3" size="sm">
-              Connect Wallet
-            </Button>
+            {isAuthenticated ? (
+              <>
+                <Button variant="outline" size="sm" asChild>
+                  <Link
+                    to="/profile/demo-user"
+                    className="flex items-center space-x-2"
+                  >
+                    <User className="h-4 w-4" />
+                    <span className="hidden sm:block">Profile</span>
+                  </Link>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="hover:bg-transparent hover:text-black"
+                >
+                  {principal.slice(0, 9)}
+                </Button>
+                <Button onClick={logout} variant={"destructive"} size="sm">
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <Button onClick={login} className="btn-web3" size="sm">
+                Login
+              </Button>
+            )}
           </div>
         </div>
       </div>

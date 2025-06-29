@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/select";
 import LandCard from "@/components/LandCard";
 import { Search, Map, Users, Shield } from "lucide-react";
-import { rwa_icp_backend } from "declarations/rwa-icp-backend";
+import { rwa_icp_backend } from "../../../declarations/rwa-icp-backend";
 
 type Land = {
   id: string;
@@ -185,7 +185,9 @@ const Index = () => {
 
           {loading ? (
             <div className="text-center py-12">
-              <span className="text-lg text-muted-foreground animate-pulse">Loading lands...</span>
+              <span className="text-lg text-muted-foreground animate-pulse">
+                Loading lands...
+              </span>
             </div>
           ) : error ? (
             <div className="text-center py-12">
@@ -195,7 +197,11 @@ const Index = () => {
             <>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {filteredLands.map((land) => (
-                  <LandCard key={land.id} {...land} owner={land.current_owner} />
+                  <LandCard
+                    key={land.id}
+                    {...land}
+                    owner={land.current_owner}
+                  />
                 ))}
               </div>
               {filteredLands.length === 0 && (

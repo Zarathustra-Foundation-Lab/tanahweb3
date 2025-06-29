@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import MapView from "@/components/MapView";
 import { ArrowLeft, MapPin, User, Phone, MessageCircle } from "lucide-react";
-import { rwa_icp_backend } from "declarations/rwa-icp-backend";
+import { rwa_icp_backend } from "../../../declarations/rwa-icp-backend";
+import { Principal } from "@dfinity/principal";
 
 export interface LocationItem {
   lat: string[];
@@ -16,7 +17,7 @@ export interface LocationItem {
 
 export interface Item {
   id: number;
-  current_owner: string;
+  current_owner: string | Principal;
   title: string;
   description: string;
   location: LocationItem;
@@ -36,7 +37,7 @@ const statusToString = (status: any) => {
   return "INITIAL";
 };
 
-const getStatusColor = (status: Item['status']) => {
+const getStatusColor = (status: Item["status"]) => {
   switch (status) {
     case "FOR_SALE":
       return "bg-web3-green text-white";
@@ -66,14 +67,14 @@ const LandDetail = () => {
       last_name: "",
       bio: "",
       city: "-",
-      country: "-"
+      country: "-",
     },
     contact: {
       callnumber: "-",
       instagram: "-",
-      whatapps: "-"
+      whatapps: "-",
     },
-    items_id: []
+    items_id: [],
   };
 
   useEffect(() => {
@@ -82,9 +83,9 @@ const LandDetail = () => {
       setErr(null);
       try {
         const natId = Number(id);
-        const land = await rwa_icp_backend.getItem(natId);
-        
-        console.log(land)
+        const land = await rwa_icp_backend.getItem(BigInt(natId));
+
+        console.log(land);
 
         if (!land) {
           setErr("Land not found");
@@ -99,8 +100,10 @@ const LandDetail = () => {
             return null;
           };
           setLand({
-            id: result.id,
-            current_owner: result.current_owner.toText ? result.current_owner.toText() : result.current_owner,
+            id: Number(result.id),
+            current_owner: result.current_owner.toText
+              ? result.current_owner.toText()
+              : result.current_owner,
             title: result.title,
             description: result.description,
             location: {
@@ -116,7 +119,7 @@ const LandDetail = () => {
           });
         }
       } catch (e: any) {
-        console.log(e)
+        console.log(e);
         setErr("Failed to fetch land detail");
         setLand(null);
       }
@@ -125,15 +128,31 @@ const LandDetail = () => {
     if (id) fetchLand();
   }, [id]);
 
-  const polygon: [number, number][] = land && land.location.lat.length > 0 && land.location.long.length > 0
-    ? [
-        [parseFloat(land.location.long[0]) - 0.001, parseFloat(land.location.lat[0]) - 0.001],
-        [parseFloat(land.location.long[0]) + 0.001, parseFloat(land.location.lat[0]) - 0.001],
-        [parseFloat(land.location.long[0]) + 0.001, parseFloat(land.location.lat[0]) + 0.001],
-        [parseFloat(land.location.long[0]) - 0.001, parseFloat(land.location.lat[0]) + 0.001],
-        [parseFloat(land.location.long[0]) - 0.001, parseFloat(land.location.lat[0]) - 0.001]
-      ]
-    : [];
+  const polygon: [number, number][] =
+    land && land.location.lat.length > 0 && land.location.long.length > 0
+      ? [
+          [
+            parseFloat(land.location.long[0]) - 0.001,
+            parseFloat(land.location.lat[0]) - 0.001,
+          ],
+          [
+            parseFloat(land.location.long[0]) + 0.001,
+            parseFloat(land.location.lat[0]) - 0.001,
+          ],
+          [
+            parseFloat(land.location.long[0]) + 0.001,
+            parseFloat(land.location.lat[0]) + 0.001,
+          ],
+          [
+            parseFloat(land.location.long[0]) - 0.001,
+            parseFloat(land.location.lat[0]) + 0.001,
+          ],
+          [
+            parseFloat(land.location.long[0]) - 0.001,
+            parseFloat(land.location.lat[0]) - 0.001,
+          ],
+        ]
+      : [];
 
   const coordinates: [number, number] =
     land && land.location.lat.length > 0 && land.location.long.length > 0
@@ -150,7 +169,9 @@ const LandDetail = () => {
   if (err || !land) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="text-center text-destructive">{err || "Land not found"}</div>
+        <div className="text-center text-destructive">
+          {err || "Land not found"}
+        </div>
         <div className="mt-4 flex justify-center">
           <Button variant="outline" asChild>
             <Link to="/">
@@ -204,8 +225,8 @@ const LandDetail = () => {
                   {
                     position: coordinates,
                     title: land.title,
-                    price: "2.5 ETH"
-                  }
+                    price: "2.5 ETH",
+                  },
                 ]}
                 height="400px"
               />
@@ -216,7 +237,9 @@ const LandDetail = () => {
                 </div>
                 <div>
                   <span className="text-muted-foreground">Longitude:</span>
-                  <span className="ml-2 font-mono">{land.location.long[0]}</span>
+                  <span className="ml-2 font-mono">
+                    {land.location.long[0]}
+                  </span>
                 </div>
               </div>
             </CardContent>
@@ -247,19 +270,26 @@ const LandDetail = () => {
                 <div className="text-3xl font-bold web3-gradient font-mono mb-2">
                   2.5 ETH
                 </div>
-                <div className="text-sm text-muted-foreground">Current Price</div>
+                <div className="text-sm text-muted-foreground">
+                  Current Price
+                </div>
               </div>
-              
+
               <Separator />
 
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Total Area</span>
-                  <span className="font-semibold">{land.location.square_meters} m²</span>
+                  <span className="font-semibold">
+                    {land.location.square_meters} m²
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Status</span>
-                  <Badge className={getStatusColor(land.status)} variant="secondary">
+                  <Badge
+                    className={getStatusColor(land.status)}
+                    variant="secondary"
+                  >
                     {land.status.replace("_", " ")}
                   </Badge>
                 </div>
@@ -269,20 +299,28 @@ const LandDetail = () => {
                 </div>
                 {land.legal_identifier && (
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Legal Identifier</span>
-                    <span className="font-mono text-sm">{land.legal_identifier}</span>
+                    <span className="text-muted-foreground">
+                      Legal Identifier
+                    </span>
+                    <span className="font-mono text-sm">
+                      {land.legal_identifier}
+                    </span>
                   </div>
                 )}
                 {land.document_hash && (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Document Hash</span>
-                    <span className="font-mono text-sm">{land.document_hash}</span>
+                    <span className="font-mono text-sm">
+                      {land.document_hash}
+                    </span>
                   </div>
                 )}
                 {land.images_hash && (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Images Hash</span>
-                    <span className="font-mono text-sm">{land.images_hash}</span>
+                    <span className="font-mono text-sm">
+                      {land.images_hash}
+                    </span>
                   </div>
                 )}
                 {land.verifier && (
@@ -295,9 +333,7 @@ const LandDetail = () => {
 
               {land.status === "FOR_SALE" && (
                 <Button asChild className="btn-web3 w-full">
-                  <Link to={`/buy/${land.id}`}>
-                    Buy This Land
-                  </Link>
+                  <Link to={`/buy/${land.id}`}>Buy This Land</Link>
                 </Button>
               )}
             </CardContent>
