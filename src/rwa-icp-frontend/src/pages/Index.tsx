@@ -71,7 +71,7 @@ const Index = () => {
           legal_identifier: item.legal_identifier ?? null,
           verifier: item.verifier?.toString?.() ?? null,
           document_hash: item.document_hash ?? null,
-          images_hash: item.images_hash ?? null,
+          images_hash: item.images_hash[0] ?? null,
         }));
 
         setLands(mappedLands);

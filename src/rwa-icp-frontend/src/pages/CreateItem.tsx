@@ -49,8 +49,8 @@ type FormErrors = {
 };
 
 export default function CreateItem() {
-  const { principal } = useAuthContext();
-  const itemService = createItemService();
+  const { principal, actor } = useAuthContext();
+  const itemService = createItemService(actor);
 
   const [formData, setFormData] = useState<ItemFormState>({
     title: "",

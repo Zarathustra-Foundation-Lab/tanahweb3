@@ -122,7 +122,7 @@ const Navbar = () => {
                   size="sm"
                   className="hover:bg-transparent hover:text-black md:block hidden"
                 >
-                  {user.username ?? "tidak ada"}
+                  {user.principal.slice(0, 8) ?? ""}
                 </Button>
                 <Button onClick={logout} variant={"destructive"} size="sm">
                   Logout

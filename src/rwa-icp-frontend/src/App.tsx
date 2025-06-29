@@ -45,7 +45,7 @@ const App = () => {
                   }
                 />
 
-                <Route
+                {/* <Route
                   path="/buy/:id"
                   element={
                     <ProtectedRoute>
@@ -53,6 +53,7 @@ const App = () => {
                     </ProtectedRoute>
                   }
                 />
+
                 <Route
                   path="/sell"
                   element={
@@ -60,7 +61,8 @@ const App = () => {
                       <SellLand />
                     </ProtectedRoute>
                   }
-                />
+                /> */}
+
                 <Route
                   path="/profile/:userId"
                   element={

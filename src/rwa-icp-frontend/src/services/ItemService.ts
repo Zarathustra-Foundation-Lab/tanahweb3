@@ -26,6 +26,10 @@ export const createItemService = (
       return await actor.getItems();
     },
 
+    getItem: async (id: number) => {
+      return await actor.getItem(BigInt(id));
+    },
+
     /**
      * Mengambil koleksi item untuk pengguna yang sedang login.
      * Fungsi ini memerlukan caller yang terautentikasi.
