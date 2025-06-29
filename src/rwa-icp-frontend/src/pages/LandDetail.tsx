@@ -253,7 +253,7 @@ const LandDetail = () => {
             <CardContent>
               {land.images_hash ? (
                 <img
-                  src={`https://ipfs.io/ipfs/${land.images_hash}`}
+                  src={`https://cyan-persistent-marten-142.mypinata.cloud/ipfs/${land.images_hash}`}
                   alt={`Image of ${land.title}`}
                   className="w-full h-96 object-cover rounded-lg shadow-md transition-transform duration-300 hover:scale-[1.01]"
                   onError={(e) => {
@@ -371,7 +371,7 @@ const LandDetail = () => {
                   <div className="flex justify-between items-center">
                     <span className="text-muted-foreground">Hash Dokumen</span>
                     <a
-                      href={`https://ipfs.io/ipfs/${land.document_hash}`}
+                      href={`https://cyan-persistent-marten-142.mypinata.cloud/ipfs/${land.document_hash}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="font-mono text-sm text-blue-500 hover:underline truncate max-w-[150px]"
@@ -385,7 +385,7 @@ const LandDetail = () => {
                   <div className="flex justify-between items-center">
                     <span className="text-muted-foreground">Hash Gambar</span>
                     <a
-                      href={`https://ipfs.io/ipfs/${land.images_hash}`}
+                      href={`https://cyan-persistent-marten-142.mypinata.cloud/ipfs/${land.images_hash}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="font-mono text-sm text-blue-500 hover:underline truncate max-w-[150px]"

@@ -79,9 +79,11 @@ const Navbar = () => {
                 </Link>
 
                 <Link
-                  to="/sell"
+                  to={`/profile/${user.username.toLowerCase()}/transaction`}
                   className={`text-sm font-medium transition-colors hover:text-web3-cyan ${
-                    isActive("/sell")
+                    isActive(
+                      `/profile/${user.username.toLowerCase()}/transaction`
+                    )
                       ? "text-web3-cyan"
                       : "text-muted-foreground"
                   }`}

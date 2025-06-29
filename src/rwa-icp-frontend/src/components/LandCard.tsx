@@ -54,7 +54,7 @@ const LandCard = ({
   const itemService = createItemService(actor);
 
   const imageUrl = !Array.isArray(images_hash)
-    ? `https://nftstorage.link/ipfs/${images_hash}`
+    ? `https://cyan-persistent-marten-142.mypinata.cloud/ipfs/${images_hash}`
     : undefined;
 
   const locationString =
@@ -77,6 +77,11 @@ const LandCard = ({
 
     await itemService.requestBuy(idNum);
   };
+
+  const samePrincipal =
+    myPrincipal && thisPrincipalOwner
+      ? myPrincipal?.toString() != thisPrincipalOwner?.toString()
+      : false;
 
   return (
     <Card className="card-web3 group hover:scale-[1.02] transition-all duration-300">
@@ -129,7 +134,7 @@ const LandCard = ({
           </Button>
 
           {(status == "OWNED" || status == "INITIAL") &&
-            myPrincipal.toText() == thisPrincipalOwner.toText() && (
+            myPrincipal?.toText() == thisPrincipalOwner?.toText() && (
               <Button
                 onClick={handleSetListing}
                 variant="outline"
@@ -139,16 +144,15 @@ const LandCard = ({
               </Button>
             )}
 
-          {status === "FOR_SALE" &&
-            myPrincipal?.toText() != thisPrincipalOwner?.toText() && (
-              <Button
-                onClick={handleRequestBuy}
-                asChild
-                className="btn-web3 flex-1"
-              >
-                Request Buy
-              </Button>
-            )}
+          {status === "FOR_SALE" && samePrincipal && (
+            <Button
+              onClick={handleRequestBuy}
+              asChild
+              className="btn-web3 flex-1"
+            >
+              Request Buy
+            </Button>
+          )}
         </div>
       </CardFooter>
     </Card>

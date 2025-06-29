@@ -16,6 +16,7 @@ import Login from "./pages/Login";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import CreateItem from "./pages/CreateItem";
+import Transaction from "./pages/Transaction";
 
 const queryClient = new QueryClient();
 
@@ -45,23 +46,14 @@ const App = () => {
                   }
                 />
 
-                {/* <Route
-                  path="/buy/:id"
+                <Route
+                  path="/profile/:userId/transaction"
                   element={
                     <ProtectedRoute>
-                      <BuyLand />
+                      <Transaction />
                     </ProtectedRoute>
                   }
                 />
-
-                <Route
-                  path="/sell"
-                  element={
-                    <ProtectedRoute>
-                      <SellLand />
-                    </ProtectedRoute>
-                  }
-                /> */}
 
                 <Route
                   path="/profile/:userId"
