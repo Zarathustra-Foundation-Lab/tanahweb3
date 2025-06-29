@@ -19,80 +19,24 @@ import type { StatusItem } from "@/types";
 import { useEffect, useState } from "react";
 import { createUserService } from "@/services/UserService";
 import { useAuthContext } from "@/services/auth";
+import { createItemService } from "@/services/ItemService";
 
 import { getNullableCandidString } from "@/lib/utils";
 
 import { Item, UserProfile as UserProfileType } from "@/types/type";
 import { Principal } from "@dfinity/principal";
 
-const userLands: Item[] = [
-  {
-    current_owner: Principal.fromText("aaaaa-aa"), // Contoh Principal. Ubah jika perlu
-    description:
-      "Kavling strategis di pusat kota digital, cocok untuk pembangunan residensial atau komersial. Akses mudah ke fasilitas publik.",
-    document_hash: "QmWXYZ789abcDEF123ghiJKL456mnoPQR789", // Contoh hash dokumen IPFS
-    id: 1,
-    images_hash: "QmABCDEF123456789abcdefABCDEF123456789", // Contoh hash gambar IPFS
-    location: {
-      lat: ["-6.2088"], // Contoh koordinat Jakarta
-      long: ["106.8456"],
-      square_meters: 500,
-    },
-    status: "FOR_SALE", // Contoh status
-    title: "Kavling Digital Jakarta Pusat",
-    price: 15000000000000, // Harga dalam Nat (BigInt)
-    verifier: null, // Contoh Principal verifier
-    legal_identifier: "JP-2024-001", // Contoh identifikasi legal
-  },
-  {
-    current_owner: Principal.fromText("bbbbb-bb"), // Contoh Principal lain
-    description:
-      "Tanah luas di pinggir danau virtual, pemandangan indah, ideal untuk villa mewah atau resor. Lingkungan tenang dan eksklusif.",
-    document_hash: null, // Contoh tanpa dokumen
-    id: 2,
-    images_hash: "QmGHIJKL0987654321fedcbaFEDCBA0987654321", // Contoh hash gambar IPFS lain
-    location: {
-      lat: ["-7.7956"], // Contoh koordinat Yogyakarta
-      long: ["110.3695"],
-      square_meters: 1200,
-    },
-    status: "OWNED", // Contoh status
-    title: "Tanah Tepi Danau Virtual Yogya",
-    price: 25000000000000, // Harga dalam Nat (BigInt)
-    verifier: null, // Contoh tanpa verifier
-    legal_identifier: "YG-2023-005",
-  },
-  {
-    current_owner: Principal.fromText("aaaaa-aa"), // Pemilik yang sama dengan item 1
-    description:
-      "Properti komersial di distrik bisnis metaverse. Potensi tinggi untuk toko atau kantor virtual. Dekat dengan pusat transportasi.",
-    document_hash: "QmNOPQR987654321abcdefghIJKLMN987654321",
-    id: 3,
-    images_hash: "QmSTUVWx45678901234567890abcdefghijklmnopqrst",
-    location: {
-      lat: ["-8.6750"], // Contoh koordinat Bali
-      long: ["115.2124"],
-      square_meters: 750,
-    },
-    status: "PENDING_SALE", // Contoh status
-    title: "Lahan Komersial Bali Metaverse",
-    price: 18000000000000, // Harga dalam Nat (BigInt)
-    verifier: Principal.fromText("2vxsx-fae").toString(),
-    legal_identifier: "BL-2024-010",
-  },
-];
-
-// Mock user's lands with correct StatusItem type
-const stats = {
-  landsOwned: 15,
-  landsSold: 12,
-  totalVolume: "28.7 ETH",
-};
-
 const UserProfile = () => {
+  const [userLands, setUserLands] = useState<Item[]>([]);
+  const [stats, setStats] = useState({
+    landsOwned: 0,
+    landsSold: 0,
+    totalVolume: "0 ETH",
+  });
   const { userId: username } = useParams();
   const { actor, principal: myPrincipal } = useAuthContext();
   const userService = createUserService(actor);
+  const itemService = createItemService(actor);
 
   const [user, setUser] = useState<UserProfileType>({
     principal_id: undefined,
@@ -116,9 +60,10 @@ const UserProfile = () => {
     },
   });
 
-  // fetch data user
+  // fetch data user & lands
   useEffect(() => {
     (async () => {
+      // Ambil data user
       const { "0": result } = await userService.getUserByUsername(username);
 
       setUser({
@@ -142,6 +87,24 @@ const UserProfile = () => {
           facebook: getNullableCandidString(result.contact.facebook),
         },
       });
+
+      try {
+        const lands = await itemService.getUserCollection();
+        setUserLands(lands);
+
+        setStats({
+          landsOwned: lands.length,
+          landsSold: 0,
+          totalVolume: "0 ETH",
+        });
+      } catch (e) {
+        setUserLands([]);
+        setStats({
+          landsOwned: 0,
+          landsSold: 0,
+          totalVolume: "0 ETH",
+        });
+      }
     })();
   }, []);
 
@@ -163,7 +126,7 @@ const UserProfile = () => {
 
             <CardContent className="space-y-6">
               {/* Stats */}
-              <Stats />
+              <Stats stats={stats} />
 
               <Separator />
 
@@ -245,7 +208,7 @@ const UserProfile = () => {
             </CardContent>
           </Card>
           {/* Activity Stats */}
-          <ActivityStats />
+          <ActivityStats stats={stats} />
 
           {/* User's Lands */}
           <Card className="card-web3">
@@ -262,13 +225,14 @@ const UserProfile = () => {
                     key={land.id}
                     id={land.id.toString()}
                     title={land.title}
-                    owner={land.current_owner.toString()}
+                    description={land.description}
+                    location={land.location}
                     status={land.status}
-                    location={{
-                      lat: ["23"],
-                      long: ["773"],
-                      square_meters: 23,
-                    }}
+                    legal_identifier={land.legal_identifier ?? undefined}
+                    verifier={land.verifier ?? undefined}
+                    document_hash={land.document_hash ?? undefined}
+                    images_hash={land.images_hash ?? undefined}
+                    owner={land.current_owner.toString()}
                   />
                 ))}
               </div>
@@ -295,7 +259,7 @@ const UserProfile = () => {
 
 export default UserProfile;
 
-function Stats() {
+function Stats({ stats }: { stats: { landsOwned: number; landsSold: number; totalVolume: string } }) {
   return (
     <div className="space-y-3">
       <div className="flex justify-between items-center">
@@ -314,7 +278,7 @@ function Stats() {
   );
 }
 
-function ActivityStats() {
+function ActivityStats({ stats }: { stats: { landsOwned: number; landsSold: number; totalVolume: string } }) {
   return (
     <div className="grid md:grid-cols-3 gap-6">
       <Card className="card-web3 text-center">
