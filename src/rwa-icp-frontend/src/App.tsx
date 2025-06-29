@@ -1,31 +1,78 @@
-import { useState } from 'react';
-import { rwa_icp_backend } from '../../declarations/rwa-icp-backend';
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import Index from "./pages/Index";
+import LandDetail from "./pages/LandDetail";
+import BuyLand from "./pages/BuyLand";
+import SellLand from "./pages/SellLand";
+import UserProfile from "./pages/UserProfile";
+import NotFound from "./pages/NotFound";
+import Navbar from "./components/Navbar";
 
-function App() {
-  const [greeting, setGreeting] = useState('');
+import { AuthProvider } from "./services/auth";
+import Login from "./pages/Login";
 
-  function handleSubmit(event: any) {
-    event.preventDefault();
-    const name = event.target.elements.name.value;
-    rwa_icp_backend.greet(name).then((greeting) => {
-      setGreeting(greeting);
-    });
-    return false;
-  }
+import ProtectedRoute from "./components/ProtectedRoute";
+import CreateItem from "./pages/CreateItem";
+import Transaction from "./pages/Transaction";
 
+const queryClient = new QueryClient();
+
+const App = () => {
   return (
-    <main>
-      <img src="/logo2.svg" alt="DFINITY logo" />
-      <br />
-      <br />
-      <form action="#" onSubmit={handleSubmit}>
-        <label htmlFor="name">Enter your name: &nbsp;</label>
-        <input id="name" alt="Name" type="text" />
-        <button type="submit">Click Me!</button>
-      </form>
-      <section id="greeting">{greeting}</section>
-    </main>
+    <AuthProvider>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <div className="min-h-screen bg-background">
+              <Navbar />
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/land/:id" element={<LandDetail />} />
+
+                <Route path="/login" element={<Login />} />
+
+                {/* need auth */}
+                <Route
+                  path="/item/create"
+                  element={
+                    <ProtectedRoute>
+                      <CreateItem />
+                    </ProtectedRoute>
+                  }
+                />
+
+                <Route
+                  path="/profile/:userId/transaction"
+                  element={
+                    <ProtectedRoute>
+                      <Transaction />
+                    </ProtectedRoute>
+                  }
+                />
+
+                <Route
+                  path="/profile/:userId"
+                  element={
+                    <ProtectedRoute>
+                      <UserProfile />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* note to add my collection page */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </div>
+          </BrowserRouter>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </AuthProvider>
   );
-}
+};
 
 export default App;

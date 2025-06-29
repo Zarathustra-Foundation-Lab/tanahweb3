@@ -1,82 +1,67 @@
-import Principal "mo:base/Principal";
 import Text "mo:base/Text";
-import HashMap "mo:base/HashMap";
-import Nat "mo:base/Nat";
 import Result "mo:base/Result";
-
+import HashMap "mo:base/HashMap";
 import User "../types/User";
+module UserService {
 
-module UserFunctions {
-
-    // Fungsi untuk mendaftar pengguna baru
-    public func signupUser(
-        users : HashMap.HashMap<Principal, User.User>,
-        usernames : HashMap.HashMap<Text, Principal>,
-        caller : Principal,
-        username : Text,
-        detail : User.UserInformation,
-        contact : User.UserContact,
-    ) : Result.Result<(Bool, HashMap.HashMap<Principal, User.User>, HashMap.HashMap<Text, Principal>), Text> {
+    public func Signup(users : User.Users, usernames : User.Usernames, caller : Principal, _username : Text, _payload : User.User) : Result.Result<(Bool, Text), (Bool, Text)> {
         if (users.get(caller) != null) {
-            return #err("User has already exist with this address");
+            return #err(false, "User has already exist with this address");
         };
-        if (usernames.get(username) != null) {
-            return #err("User has already exist with this username");
-        };
-
-        let user : User.User = {
-            principal_id = caller;
-            username = username;
-            detail = detail;
-            contact = contact;
-            items_id = [];
+        if (usernames.get(_username) != null) {
+            return #err(false, "User has already exist with this username");
         };
 
-        // Buat HashMap baru atau ubah yang sudah ada (sesuai kebutuhan Anda, Motoko HashMap mutable)
-        let newUsers = users;
-        let newUsernames = usernames;
-        newUsers.put(caller, user);
-        newUsernames.put(username, caller);
-        return #ok(true, newUsers, newUsernames);
+        // push data to mapping
+        users.put(caller, _payload);
+        usernames.put(_username, caller);
+
+        return #ok(true, "Success register user");
     };
 
-    // Fungsi untuk mendapatkan pengguna berdasarkan Principal ID
-    public func getUserByAddress(
-        users : HashMap.HashMap<Principal, User.User>,
-        addr : Principal,
-    ) : async ?User.User {
-        return users.get(addr);
-    };
-
-    // Fungsi untuk mendapatkan pengguna berdasarkan username
-    public func getUserByUsername(
-        users : HashMap.HashMap<Principal, User.User>,
-        usernames : HashMap.HashMap<Text, Principal>,
-        name : Text,
-    ) : async ?User.User {
-        switch (usernames.get(name)) {
-            case null { return null };
-            case (?addr) { return users.get(addr) };
-        };
-    };
-
-    // Fungsi untuk memperbarui daftar item ID pengguna
-    public func updateUsersItems(
-        users : HashMap.HashMap<Principal, User.User>,
-        caller : Principal,
-        newItemsIds : [Nat],
-    ) : (Bool, HashMap.HashMap<Principal, User.User>) {
+    public func _updateDetail(users : User.Users, caller : Principal, _payload : User.Detail) : Result.Result<(Bool, Text), (Bool, Text)> {
+        // get user
         switch (users.get(caller)) {
-            case null { return (false, users) };
+            case (null) {
+                return #err(false, "User not found.");
+            };
             case (?user) {
-                let updatedUser : User.User = {
-                    user with
-                    items_id = newItemsIds
+                let newUpdate : User.User = {
+                    principal_id = user.principal_id;
+                    username = user.username;
+                    detail = _payload;
+                    contact = user.contact;
                 };
-                let newUsers = users; // Buat salinan atau gunakan yang sudah ada
-                newUsers.put(caller, updatedUser);
-                return (true, newUsers);
+
+                // update data
+                users.put(caller, newUpdate);
+
+                return #ok(true, "User detail updated successfully.");
+            };
+        };
+
+    };
+
+    public func _updateContact(users : User.Users, caller : Principal, _payload : User.Contact) : Result.Result<(Bool, Text), (Bool, Text)> {
+        // get user
+        switch (users.get(caller)) {
+            case (null) {
+                return #err(false, "User not found.");
+            };
+            case (?user) {
+                let newUpdate : User.User = {
+                    principal_id = user.principal_id;
+                    username = user.username;
+                    detail = user.detail;
+                    contact = _payload;
+                };
+
+                // update data
+                users.put(caller, newUpdate);
+
+                return #ok(true, "User contact updated successfully.");
             };
         };
     };
+
 };
